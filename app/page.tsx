@@ -23,8 +23,19 @@ import {
   WandSparkles,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
+
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'default' | 'outline' | 'secondary' | 'ghost';
+  size?: 'sm' | 'lg' | 'icon';
+};
+
+function Button({ variant = 'default', size, className = '', children, ...props }: ButtonProps) {
+  return <button className={`ui-button ui-${variant} ${size ? `ui-${size}` : ''} ${className}`} {...props}>{children}</button>;
+}
+
+function Slider({ value, onValueChange, min = 0, max = 100 }: { value: number[]; onValueChange: (value: number[]) => void; min?: number; max?: number }) {
+  return <input className="native-slider" type="range" min={min} max={max} value={value[0]} onChange={(event) => onValueChange([Number(event.target.value)])} />;
+}
 
 type View = 'today' | 'forecast' | 'balance' | 'me';
 
