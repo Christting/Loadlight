@@ -12,7 +12,7 @@ import {
   CircleUserRound,
   Clock3,
   Heart,
-  Home,
+  Home as HomeIcon,
   Leaf,
   ListRestart,
   MoonStar,
@@ -58,7 +58,7 @@ const week = [
 ];
 
 const navItems = [
-  { id: 'today' as const, label: 'Today', icon: Home },
+  { id: 'today' as const, label: 'Today', icon: HomeIcon },
   { id: 'forecast' as const, label: 'Forecast', icon: CalendarDays },
   { id: 'balance' as const, label: 'Balance', icon: ListRestart },
   { id: 'me' as const, label: 'Me', icon: CircleUserRound },
