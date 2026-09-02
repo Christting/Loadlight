@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL('https://loadlight-student-capacity.limzhixuan0818.chatgpt.site'),
   title: 'LoadLight — make room to breathe',
   description: 'A gentle capacity planner that helps students see, simulate, and rebalance their load before burnout hits.',
   openGraph: {
