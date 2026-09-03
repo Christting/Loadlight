@@ -18,6 +18,13 @@
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.tmp
+*.temp
 *.pem
 
 # debug
@@ -36,3 +43,8 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+*.tsbuildinfo
+
+# local review artifacts
+/review-screenshots/
+/final-polish-screenshots/
