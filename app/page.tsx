@@ -1,11 +1,12 @@
 'use client';
 
 import { ChangeEvent, useEffect, useState } from 'react';
-import { ArrowRight, Camera, Check, ChevronRight, CircleUserRound, Home, ListChecks, LogOut, Mic, Scale, Sparkles, WandSparkles, X } from 'lucide-react';
+import { ArrowRight, Camera, Check, ChevronRight, CircleUserRound, Home, ListChecks, LogOut, Mic, Scale, WandSparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Lumi } from '@/components/loadlight/Lumi';
+import { WhatIfView } from '@/components/loadlight/WhatIfView';
 import { profile, timelineLabels, todayFiveLoads, weekPlan } from '@/lib/loadlight/demo-data';
 import { defaultStoredState, loadStoredState, saveStoredState } from '@/lib/loadlight/storage';
 import type { AppView, CheckInMood, JournalEntry, StoredLoadLightState } from '@/lib/loadlight/types';
@@ -37,6 +38,7 @@ const navItems = [
 function Header({ label, title }: { label: string; title: string }) {
   return <header className="page-header"><p className="date-label">{label}</p><h1>{title}</h1></header>;
 }
+
 
 function LoginView({ onLogin }: { onLogin: (email: string) => void }) {
   const [email, setEmail] = useState(profile.email);
@@ -158,7 +160,7 @@ export default function LoadLightApp() {
   if (!hydrated) return <main className="loading-page"><span>✦</span><p>Making a little room…</p></main>;
   if (!stored.isLoggedIn) return <LoginView onLogin={login} />;
   return <main className="app-shell"><section className="phone-frame" aria-label="LoadLight student workload manager">
-    {view === 'home' && <HomeView stored={stored} onSave={persist} onNavigate={setView} />}{view === 'tasks' && <TeammatePlaceholder title="Tasks" />}{view === 'what-if' && <TeammatePlaceholder title="What-if" />}{view === 'balance' && <TeammatePlaceholder title="Balance" />}{view === 'me' && <MeView onLogout={logout} />}
+    {view === 'home' && <HomeView stored={stored} onSave={persist} onNavigate={setView} />}{view === 'tasks' && <TeammatePlaceholder title="Tasks" />}{view === 'what-if' && <WhatIfView stored={stored} onSave={persist} />}{view === 'balance' && <TeammatePlaceholder title="Balance" />}{view === 'me' && <MeView onLogout={logout} />}
     <nav className="bottom-nav" aria-label="Primary navigation">{navItems.map(({ id, label, icon: Icon, featured }) => <Button key={id} variant="ghost" className={`${view === id ? 'active' : ''} ${featured ? 'featured' : ''}`} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}><Icon /><span>{label}</span></Button>)}</nav>
     {toast && <output className="toast" aria-live="polite"><Check /> {toast}</output>}
   </section><aside className="desktop-note" aria-hidden="true"><span>✦</span><p><strong>LoadLight</strong><small>Make room to breathe.</small></p></aside></main>;

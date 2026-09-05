@@ -6,13 +6,17 @@ export const defaultStoredState: StoredLoadLightState = {
   isLoggedIn: false,
   email: 'mia@student.edu',
   journalEntries: [],
+  whatIfPlans: [],
 };
 
 export function loadStoredState(): StoredLoadLightState {
   if (typeof window === 'undefined') return defaultStoredState;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? { ...defaultStoredState, ...JSON.parse(raw) } : defaultStoredState;
+    if (!raw) return defaultStoredState;
+    const parsed = JSON.parse(raw) as StoredLoadLightState;
+    const whatIfPlans = parsed.whatIfPlans?.length ? parsed.whatIfPlans : parsed.whatIfPlan ? [parsed.whatIfPlan] : [];
+    return { ...defaultStoredState, ...parsed, isLoggedIn: false, whatIfPlan: whatIfPlans[0], whatIfPlans };
   } catch {
     return defaultStoredState;
   }

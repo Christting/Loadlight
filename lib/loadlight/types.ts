@@ -61,9 +61,29 @@ export interface BalanceMove {
   relocatedPoints: number;
 }
 
+export interface WhatIfPlan {
+  id: string;
+  title: string;
+  dateLabel: string;
+  durationHours: number;
+  demand: Demand;
+  category: TaskCategory;
+  currentLoad?: number;
+  projectedLoad: number;
+  balancedLoad: number;
+  adjustments?: Record<LoadDimension, number>;
+  dominantDimension?: LoadDimension;
+  statusLabel?: string;
+  recommendation?: string;
+  acceptedMoveIds: string[];
+  savedAt: string;
+}
+
 export interface StoredLoadLightState {
   isLoggedIn: boolean;
   email: string;
   journalEntries: JournalEntry[];
   selectedMood?: CheckInMood;
+  whatIfPlan?: WhatIfPlan;
+  whatIfPlans?: WhatIfPlan[];
 }
