@@ -1,4 +1,4 @@
-import { profile, proposedCafeShift, thursdayTasks } from './demo-data';
+import { DEMO_DATES, profile, proposedCafeShift, thursdayTasks } from './demo-data';
 import type { BalanceMove, Demand, Task } from './types';
 
 export const demandWeights: Record<Demand, number> = {
@@ -17,6 +17,13 @@ export function dailyTaskLoad(tasks: Task[]): number {
   return tasks.reduce((total, task) => total + taskLoadPoints(task), 0);
 }
 
+export function effectiveTaskDate(
+  task: Task,
+  taskDateOverrides: Record<string, string>,
+): string {
+  return taskDateOverrides[task.id] ?? task.date;
+}
+
 export const thursdayBeforeLoad = dailyTaskLoad(thursdayTasks);
 export const proposedShiftLoad = taskLoadPoints(proposedCafeShift);
 export const thursdayAfterWhatIf = thursdayBeforeLoad + proposedShiftLoad;
@@ -25,24 +32,30 @@ export const balanceMoves: BalanceMove[] = [
   {
     taskId: 'assignment-research',
     title: 'Move assignment research earlier',
-    fromDate: 'Thursday',
-    toDate: 'Wednesday',
+    fromDate: DEMO_DATES.whatIfDay,
+    fromDayLabel: 'Thursday',
+    toDate: '2025-09-03',
+    toDayLabel: 'Wednesday',
     reason: 'Research is flexible; the submission deadline remains unchanged.',
     relocatedPoints: taskLoadPoints(thursdayTasks.find((task) => task.id === 'assignment-research')!),
   },
   {
     taskId: 'team-call-prep',
     title: 'Prepare for the team call on Wednesday',
-    fromDate: 'Thursday',
-    toDate: 'Wednesday',
+    fromDate: DEMO_DATES.whatIfDay,
+    fromDayLabel: 'Thursday',
+    toDate: '2025-09-03',
+    toDayLabel: 'Wednesday',
     reason: 'Preparation can happen earlier without moving the fixed review.',
     relocatedPoints: taskLoadPoints(thursdayTasks.find((task) => task.id === 'team-call-prep')!),
   },
   {
     taskId: 'grocery-run',
     title: 'Group groceries with Friday’s library visit',
-    fromDate: 'Thursday',
-    toDate: 'Friday',
+    fromDate: DEMO_DATES.whatIfDay,
+    fromDayLabel: 'Thursday',
+    toDate: '2025-09-05',
+    toDayLabel: 'Friday',
     reason: 'The errand has no fixed deadline and can be grouped with an existing trip.',
     relocatedPoints: taskLoadPoints(thursdayTasks.find((task) => task.id === 'grocery-run')!),
   },

@@ -6,6 +6,7 @@ export const defaultStoredState: StoredLoadLightState = {
   isLoggedIn: false,
   email: 'mia@student.edu',
   journalEntries: [],
+  taskDateOverrides: {},
 };
 
 export function loadStoredState(): StoredLoadLightState {

@@ -5,6 +5,7 @@ import { ArrowRight, Camera, Check, ChevronRight, CircleUserRound, Home, ListChe
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { BalanceView } from '@/components/loadlight/BalanceView';
 import { Lumi } from '@/components/loadlight/Lumi';
 import { profile, timelineLabels, todayFiveLoads, weekPlan } from '@/lib/loadlight/demo-data';
 import { defaultStoredState, loadStoredState, saveStoredState } from '@/lib/loadlight/storage';
@@ -158,7 +159,7 @@ export default function LoadLightApp() {
   if (!hydrated) return <main className="loading-page"><span>✦</span><p>Making a little room…</p></main>;
   if (!stored.isLoggedIn) return <LoginView onLogin={login} />;
   return <main className="app-shell"><section className="phone-frame" aria-label="LoadLight student workload manager">
-    {view === 'home' && <HomeView stored={stored} onSave={persist} onNavigate={setView} />}{view === 'tasks' && <TeammatePlaceholder title="Tasks" />}{view === 'what-if' && <TeammatePlaceholder title="What-if" />}{view === 'balance' && <TeammatePlaceholder title="Balance" />}{view === 'me' && <MeView onLogout={logout} />}
+    {view === 'home' && <HomeView stored={stored} onSave={persist} onNavigate={setView} />}{view === 'tasks' && <TeammatePlaceholder title="Tasks" />}{view === 'what-if' && <TeammatePlaceholder title="What-if" />}{view === 'balance' && <BalanceView />}{view === 'me' && <MeView onLogout={logout} />}
     <nav className="bottom-nav" aria-label="Primary navigation">{navItems.map(({ id, label, icon: Icon, featured }) => <Button key={id} variant="ghost" className={`${view === id ? 'active' : ''} ${featured ? 'featured' : ''}`} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}><Icon /><span>{label}</span></Button>)}</nav>
     {toast && <output className="toast" aria-live="polite"><Check /> {toast}</output>}
   </section><aside className="desktop-note" aria-hidden="true"><span>✦</span><p><strong>LoadLight</strong><small>Make room to breathe.</small></p></aside></main>;

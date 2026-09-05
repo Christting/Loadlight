@@ -56,7 +56,9 @@ export interface BalanceMove {
   taskId: string;
   title: string;
   fromDate: string;
+  fromDayLabel: string;
   toDate: string;
+  toDayLabel: string;
   reason: string;
   relocatedPoints: number;
 }
@@ -66,4 +68,5 @@ export interface StoredLoadLightState {
   email: string;
   journalEntries: JournalEntry[];
   selectedMood?: CheckInMood;
+  taskDateOverrides: Record<string, string>;
 }
