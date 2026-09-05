@@ -71,7 +71,6 @@ export function BalanceView() {
     <section className="balance-action-area" aria-label="Balance plan summary">
       <div><strong>{selectedPoints} / {relocatedLoad} points moved</strong><span>{remainingPoints} points remaining</span></div>
       <Button className="primary-action" disabled={!canApply}><Scale /> Apply plan</Button>
-      <p>This is a preview for now. Applying changes comes next.</p>
     </section>
   </div>;
 }
