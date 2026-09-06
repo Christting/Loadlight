@@ -88,7 +88,7 @@ export const thursdayTasks: Task[] = [
     timeLabel: 'Flexible',
     durationHours: 1.35,
     demand: 'low',
-    category: 'errands',
+    category: 'personal',
     flexibility: 'flexible',
     loadMix: { errands: 0.65, physical: 0.2, time: 0.15 },
   },
