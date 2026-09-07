@@ -113,6 +113,12 @@ h2 { margin-bottom: 0; font-size: 25px; line-height: 1.2; font-weight: 520; lett
 .what-if-view .page-header h1 { color: var(--ink); font-size: 29px; line-height: 1.08; font-weight: 560; letter-spacing: 0; }
 .what-if-view .date-label { color: var(--muted); }
 .what-if-view .home-intro { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.whatif-header { display: grid; gap: 10px; margin: -28px -26px 0; padding: 25px 26px 22px; color: #fff; background: #443777; }
+.whatif-header.solo { padding-top: 31px; }
+.whatif-header div { display: grid; gap: 5px; }
+.whatif-header p { margin: 0; color: rgba(255,255,255,.72); font-size: 11px; line-height: 1.2; font-weight: 620; letter-spacing: .1em; text-transform: uppercase; }
+.whatif-header h1 { margin: 0; color: #fff; font-size: 30px; line-height: 1.08; font-weight: 560; letter-spacing: 0; }
+.whatif-header .back-link { justify-self: start; color: rgba(255,255,255,.84); }
 .scenario-pagebar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 32px; }
 .scenario-pagebar > span { color: var(--muted); font-size: 12px; line-height: 1.2; font-weight: 620; letter-spacing: .08em; text-transform: uppercase; }
 .back-link { display: inline-flex; align-items: center; gap: 4px; margin: 0; padding: 0; border: 0; color: var(--indigo); background: transparent; font-size: 14px; font-weight: 560; }
@@ -262,6 +268,6 @@ h2 { margin-bottom: 0; font-size: 25px; line-height: 1.2; font-weight: 520; lett
 
 @media (max-width:900px) { .desktop-note { display:none; } }
 @media (max-width:470px) { .app-shell,.login-page { padding:0; }.phone-frame { width:100%; height:100vh; min-height:650px; border:0; border-radius:0; box-shadow:none; }.login-panel { width:100%; min-height:100vh; display:grid; align-content:center; border:0; box-shadow:none; } }
-@media (max-width:390px) { .view-content { padding-inline: 20px; }.load-hero > .lumi-large { width: 276px; min-height: 265px; margin-top: -31px; }.mood-row .lumi-small { width: 66px; min-height: 70px; }.mood-row > button { font-size: 11px; }.mood-timeline .lumi-small { width: 47px; min-height: 53px; }.mood-timeline span, .mood-timeline small { font-size: 11px; }.what-if-callout .lumi-large { width: 188px; min-height: 207px; right: -7px; }.what-if-callout h2 { max-width: 202px; font-size: 20px; }.whatif-dashboard-card .lumi-large { width: 148px; min-height: 152px; }.saved-scenario-main { grid-template-columns: 30px 1fr; gap: 10px; }.saved-scenario-main .risk-pill { grid-column: 2; justify-self: start; max-width: none; margin-top: 2px; }.adjustment-row { grid-template-columns: 19px 54px 38px 24px 1fr 24px; gap: 6px; font-size: 12px; }.comparison-row { grid-template-columns: 20px 1fr 39px 15px 39px 60px; gap: 5px; } }
+@media (max-width:390px) { .view-content { padding-inline: 20px; }.whatif-header { margin-inline: -20px; padding-inline: 20px; }.load-hero > .lumi-large { width: 276px; min-height: 265px; margin-top: -31px; }.mood-row .lumi-small { width: 66px; min-height: 70px; }.mood-row > button { font-size: 11px; }.mood-timeline .lumi-small { width: 47px; min-height: 53px; }.mood-timeline span, .mood-timeline small { font-size: 11px; }.what-if-callout .lumi-large { width: 188px; min-height: 207px; right: -7px; }.what-if-callout h2 { max-width: 202px; font-size: 20px; }.whatif-dashboard-card .lumi-large { width: 148px; min-height: 152px; }.saved-scenario-main { grid-template-columns: 30px 1fr; gap: 10px; }.saved-scenario-main .risk-pill { grid-column: 2; justify-self: start; max-width: none; margin-top: 2px; }.adjustment-row { grid-template-columns: 19px 54px 38px 24px 1fr 24px; gap: 6px; font-size: 12px; }.comparison-row { grid-template-columns: 20px 1fr 39px 15px 39px 60px; gap: 5px; } }
 @media (max-height:720px) { .login-panel > .lumi-slot { width:88px; min-height:92px; }.login-panel { padding-top:22px; padding-bottom:22px; }.login-form { margin-top:20px; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }

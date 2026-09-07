@@ -44,6 +44,16 @@ const dimensionLabels: Record<LoadDimension, string> = {
   errands: 'Errands',
 };
 
+function WhatIfHeader({ backLabel, label, onBack, title }: { backLabel?: string; label: string; onBack?: () => void; title: string }) {
+  return <header className={`whatif-header ${onBack ? '' : 'solo'}`}>
+    {onBack && <button className="back-link" type="button" onClick={onBack}><ChevronLeft /> {backLabel}</button>}
+    <div>
+      <p>{label}</p>
+      <h1>{title}</h1>
+    </div>
+  </header>;
+}
+
 function clampLoad(value: number, max = 118) {
   return Math.max(0, Math.min(max, value));
 }
@@ -291,10 +301,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   }
 
   if (step === 'define') return <div className="view-content what-if-view" ref={viewRef}>
-    <div className="scenario-pagebar">
-      <button className="back-link" type="button" onClick={backToOverview}><ChevronLeft /> Scenarios</button>
-      <span>{editingPlan ? 'Edit scenario' : 'New scenario'}</span>
-    </div>
+    <WhatIfHeader backLabel="Scenarios" label={editingPlan ? 'EDIT SCENARIO' : 'NEW SCENARIO'} onBack={backToOverview} title="Plan the change." />
     <section className="scenario-form" aria-labelledby="scenario-form-title">
       <div className="form-heading">
         <div><h2 id="scenario-form-title">Scenario details</h2><p>Tune the five load areas, then preview the impact.</p></div>
@@ -329,8 +336,8 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   </div>;
 
   if (step === 'processing') return <div className="view-content what-if-view processing-view" ref={viewRef}>
+    <WhatIfHeader label="PROCESSING" title="Calculating impact." />
     <section className="processing-card" aria-label="Processing scenario data">
-      <span className="section-kicker">Processing</span>
       <Lumi state="recovering" size="large" />
       <LoaderCircle className="spin-icon" aria-hidden="true" />
       <h2>Calculating future impact...</h2>
@@ -340,10 +347,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   </div>;
 
   if (step === 'results') return <div className="view-content what-if-view" ref={viewRef}>
-    <div className="scenario-pagebar">
-      <button className="back-link" type="button" onClick={editResult}><ChevronLeft /> Edit</button>
-      <span>Scenario results</span>
-    </div>
+    <WhatIfHeader backLabel="Edit" label="SCENARIO RESULTS" onBack={editResult} title={reviewedPlan?.title || scenarioName || 'New scenario'} />
     <section className={`result-card ${resultStatus.tone}`} aria-labelledby="result-title">
       <div className="result-heading">
         <span>{reviewedPlan?.title || scenarioName || 'New scenario'}</span>
@@ -403,11 +407,9 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   </div>;
 
   return <div className="view-content what-if-view" ref={viewRef}>
+    <WhatIfHeader label={timelineLabels.today} title="What-if" />
     <section className="whatif-dashboard-card" aria-labelledby="whatif-dashboard-title">
-      <div className="whatif-card-title">
-        <span>What-if planner</span>
-        <small>{timelineLabels.today}</small>
-      </div>
+      <div className="whatif-card-title"><span>What-if planner</span></div>
       <div className="mini-stats">
         <span><small>Current</small><strong>{baseWhatIfLoad}%</strong></span>
         <span><small>Saved</small><strong>{savedPlans.length}</strong></span>
