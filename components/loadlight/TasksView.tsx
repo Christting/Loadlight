@@ -185,7 +185,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
             className={`status-toggle-btn ${task.status ?? 'not-started'}`}
             onClick={() => cycleStatus(task)}
           >
-            <StatusIcon className={task.status === 'in-progress' ? 'spin-icon' : ''} /> {statusLabels[task.status ?? 'not-started']}
+            <StatusIcon/> {statusLabels[task.status ?? 'not-started']}
           </button>
         )}
         <div className="task-info">
@@ -253,7 +253,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
 
       <div className="tasks-mode-toggle" role="tablist" aria-label="Task view">
         <button type="button" role="tab" aria-selected={mode === 'list'} className={mode === 'list' ? 'active' : ''} onClick={() => setMode('list')}>
-          List
+          To-Do-List
         </button>
         <button type="button" role="tab" aria-selected={mode === 'week'} className={mode === 'week' ? 'active' : ''} onClick={() => setMode('week')}>
           Weekly plan
