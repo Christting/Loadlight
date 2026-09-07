@@ -10,6 +10,15 @@ type ChatMessage = {
   text: string;
 };
 
+type LumiChatResponse = {
+  reply?: string;
+  source?: 'fallback' | 'gemini' | 'safety';
+};
+
+type LumiStatusResponse = {
+  online?: boolean;
+};
+
 const starterPrompts = [
   'I feel overwhelmed',
   'I need a quick reset',
@@ -22,61 +31,61 @@ const starterPrompts = [
 const firstMessage: ChatMessage = {
   id: 'welcome',
   role: 'assistant',
-  text: 'Hi, I am here. Tell me what is on your mind, and I will help you make the next few minutes feel smaller.',
+  text: 'Hey, I am here with you. Tell me what has been sitting on your mind. We can untangle it slowly.',
 };
 
 function getSupportReply(message: string) {
   const lower = message.toLowerCase();
 
   if (/(suicide|kill myself|hurt myself|end my life|want to die)/.test(lower)) {
-    return 'I am really glad you told me. Please move near someone you trust right now. If you might hurt yourself or are in immediate danger, contact local emergency services now. For this moment: put down anything unsafe, breathe slowly with me, and send one short message to a real person: "I need help staying safe."';
+    return 'I am really glad you told me. Please do not stay alone with this right now. Move near someone you trust, and if you might hurt yourself or are in immediate danger, contact local emergency services now. Put down anything unsafe, breathe with me, and send one short message to someone real: "I need help staying safe."';
   }
 
   if (/(quick reset|reset|calm down|breathe)/.test(lower)) {
-    return 'Let us do a quick reset. Drop your shoulders, breathe in for 4, out for 6, then write only one sentence: "The next thing I can do is ___." Keep it tiny.';
+    return 'Okay, let us make your body feel a little safer first. Drop your shoulders, breathe in slowly, then breathe out even slower. After that, write one sentence only: "The next thing I can do is ___." Tiny is enough.';
   }
 
   if (/(cannot focus|can't focus|distracted|scrolling|procrastinat|no motivation)/.test(lower)) {
-    return 'Your brain may be protecting itself from a task that feels too big. Try this: set a 12-minute timer, hide one distraction, and start with the ugliest first draft. You are allowed to make it messy first.';
+    return 'That stuck feeling is so frustrating. It does not mean you are lazy. It may just mean the task feels too big to enter. Try 12 minutes only, with permission to make the first version ugly.';
   }
 
   if (/(said yes|too many|too much|no time|overcommitted|commitment)/.test(lower)) {
-    return 'It makes sense that your load feels packed. Choose one thing to renegotiate: ask for a later time, reduce the scope, or say "I can help for 20 minutes, but not take the whole thing." You do not have to carry every yes at full size.';
+    return 'Oof, that is a lot of yeses sitting on you. You do not have to carry every yes at full size. Pick one thing to make smaller: later time, smaller scope, or "I can help for 20 minutes, but I cannot take the whole thing."';
   }
 
   if (/(guilty|lazy|resting|rest|break)/.test(lower)) {
-    return 'Rest is not laziness. It is maintenance. If guilt shows up, try a bounded break: 20 minutes to recover, then one tiny action. That way your brain gets safety and direction.';
+    return 'I know guilt can make rest feel wrong, but you are allowed to be a person, not a machine. Take a bounded break: 20 minutes to recover, then one tiny action. Rest can be part of getting through it.';
   }
 
   if (/(tired|sleep|exhaust|burnout|drain)/.test(lower) && /(deadline|assignment|exam|task|project|study)/.test(lower)) {
-    return 'Tired plus deadline is a tough combo. First, take a 10-minute body reset. Then do only the easiest deadline step: open the file, list 3 bullets, or send one update. No full productivity mode needed.';
+    return 'Tired plus deadline is honestly such a hard combo. Do not force full productivity mode. Take a 10-minute body reset first, then do the easiest deadline step: open the file, write 3 rough bullets, or send one update.';
   }
 
   if (/(overwhelm|stress|anxious|panic|too much|full)/.test(lower)) {
-    return 'That sounds heavy. Let us make it smaller: name the one thing that must happen next, pause one thing that can wait, and give yourself a 10-minute start instead of trying to solve the whole day.';
+    return 'That sounds really heavy. Stay with me for a minute. You do not need to solve the whole day. Name the one thing that must happen next, then let one thing wait without arguing with yourself.';
   }
 
   if (/(tired|sleep|exhaust|burnout|drain)/.test(lower)) {
-    return 'Your body is asking for room. Try a short reset first: water, 5 slow breaths, then choose between a 20-minute rest or one tiny low-energy task. Recovery still counts as progress.';
+    return 'Your body sounds like it is asking for room. Drink some water, take a few slow breaths, then choose either a 20-minute rest or one tiny low-energy task. Recovery still counts.';
   }
 
   if (/(study|assignment|deadline|exam|task|project)/.test(lower)) {
-    return 'Let us turn the pressure into a plan. Pick the deadline that matters most, write the smallest next action, and move one flexible task away from today. You only need the next clear step.';
+    return 'Okay, let us take the pressure down a notch. Pick the deadline that matters most, then write the smallest next action. Not the perfect plan, just the next clear step.';
   }
 
   if (/(friend|team|group|argue|angry|conflict|misunderstood)/.test(lower)) {
-    return 'That sounds emotionally loud. Before replying, write the message you want to send, then soften it into one clear sentence: "I felt ___ when ___, can we ___?" You can protect the relationship and your boundary.';
+    return 'That kind of thing can sit in your chest for hours. Before you reply, write the messy version somewhere private first. Then soften it into one clear line: "I felt ___ when ___, can we ___?"';
   }
 
   if (/(presentation|present|stage|nervous|speaking)/.test(lower)) {
-    return 'Nerves usually mean this matters. Keep the goal small: practise the first 30 seconds twice, prepare one backup line, and remind yourself that you only need to guide people through the idea, not perform perfectly.';
+    return 'Nerves make sense. It means this matters to you. Keep it small tonight: practise just the first 30 seconds twice, then prepare one backup sentence. You only need to guide people through the idea, not be perfect.';
   }
 
   if (/(sad|lonely|cry|upset|angry|hurt)/.test(lower)) {
-    return 'I am sorry it feels like this. Before fixing anything, try naming it plainly: "I feel ___ because ___." Then choose one comfort action: text someone, step away for air, or write the thought without judging it.';
+    return 'I am sorry it feels like this. You do not have to clean the feeling up before saying it. Try naming it plainly: "I feel ___ because ___." Then do one kind thing for yourself, even a very small one.';
   }
 
-  return 'I hear you. Let us sort this into something you can actually hold: what is the main feeling, what is the smallest thing you can control, and what can wait until later?';
+  return 'I hear you. That sounds like something that has been taking up space in your head. Let us make it a bit easier to hold: what is the smallest part of this you can control right now?';
 }
 
 export function SupportChat() {
@@ -84,6 +93,7 @@ export function SupportChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([firstMessage]);
   const [draft, setDraft] = useState('');
   const [isReplying, setIsReplying] = useState(false);
+  const [connectionLabel, setConnectionLabel] = useState('');
   const messageListRef = useRef<HTMLDivElement | null>(null);
 
   const latestTone = useMemo(() => {
@@ -98,7 +108,51 @@ export function SupportChat() {
     messageListRef.current?.scrollTo({ top: messageListRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, isReplying]);
 
-  function sendMessage(text: string) {
+  useEffect(() => {
+    if (!open) return;
+
+    let active = true;
+
+    async function checkLumiStatus() {
+      try {
+        const response = await fetch('/api/lumi-chat');
+        const data = (await response.json()) as LumiStatusResponse;
+        if (active) setConnectionLabel(response.ok && data.online ? 'Lumi online' : '');
+      } catch {
+        if (active) setConnectionLabel('');
+      }
+    }
+
+    void checkLumiStatus();
+
+    return () => {
+      active = false;
+    };
+  }, [open]);
+
+  async function fetchLumiReply(nextMessages: ChatMessage[], latestText: string) {
+    try {
+      const response = await fetch('/api/lumi-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: nextMessages.map((message) => ({ role: message.role, text: message.text })),
+        }),
+      });
+      const data = (await response.json()) as LumiChatResponse;
+      if (!response.ok || !data.reply) {
+        setConnectionLabel('');
+        return getSupportReply(latestText);
+      }
+      setConnectionLabel(data.source === 'gemini' ? 'Lumi online' : '');
+      return data.reply;
+    } catch {
+      setConnectionLabel('');
+      return getSupportReply(latestText);
+    }
+  }
+
+  async function sendMessage(text: string) {
     const cleanText = text.trim();
     if (!cleanText || isReplying) return;
 
@@ -107,27 +161,37 @@ export function SupportChat() {
       role: 'user',
       text: cleanText,
     };
+    const nextMessages = [...messages, userMessage].slice(-12);
 
-    setMessages((current) => [...current, userMessage]);
+    setMessages(nextMessages);
     setDraft('');
     setIsReplying(true);
 
-    window.setTimeout(() => {
-      setMessages((current) => [
-        ...current,
-        {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          text: getSupportReply(cleanText),
-        },
-      ]);
-      setIsReplying(false);
-    }, 520);
+    const reply = await fetchLumiReply(nextMessages, cleanText);
+    setMessages((current) => [
+      ...current,
+      {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        text: reply,
+      },
+    ]);
+    setIsReplying(false);
+  }
+
+  function sendStarterMessage(text: string) {
+    void sendMessage(text);
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    sendMessage(draft);
+    void sendMessage(draft);
+  }
+
+  function clearChat() {
+    if (isReplying) return;
+    setMessages([firstMessage]);
+    setDraft('');
   }
 
   return (
@@ -142,9 +206,8 @@ export function SupportChat() {
           <header className="chat-panel-header">
             <Lumi state={latestTone} size="small" />
             <div>
-              <span>FEELING HEAVY?</span>
               <h2>Talk it through</h2>
-              <p>No judgement, just the next calmer step.</p>
+              {connectionLabel && <p>{connectionLabel}</p>}
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Close Lumi support chat">
               <X />
@@ -167,7 +230,7 @@ export function SupportChat() {
 
           <div className="chat-suggestions" aria-label="Quick chat prompts">
             {starterPrompts.map((prompt) => (
-              <button key={prompt} type="button" onClick={() => sendMessage(prompt)}>
+              <button key={prompt} type="button" onClick={() => sendStarterMessage(prompt)}>
                 {prompt}
               </button>
             ))}
@@ -184,6 +247,10 @@ export function SupportChat() {
               <Send />
             </button>
           </form>
+
+          <button className="chat-clear" type="button" onClick={clearChat} disabled={isReplying}>
+            Start fresh
+          </button>
         </section>
       )}
     </aside>
