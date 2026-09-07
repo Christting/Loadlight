@@ -301,8 +301,9 @@ h2 { margin-bottom: 0; font-size: 25px; line-height: 1.2; font-weight: 520; lett
 .toast { position: absolute; z-index: 80; right: 20px; bottom: 82px; left: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 5px; color: #fff; background: #4e6254; box-shadow: 0 7px 18px rgba(37,43,61,.14); font-size: 12px; }.toast svg { width: 14px; }
 
 .support-chat { position: absolute; z-index: 70; right: 18px; bottom: 82px; pointer-events: none; }
+.support-chat.moved { right: auto; bottom: auto; }
 .support-chat.open { right: 15px; bottom: 80px; left: 15px; }
-.chat-launcher { width: 56px; height: 56px; display: grid; place-content: center; gap: 1px; pointer-events: auto; border: 1px solid #d0bd78; border-radius: 50%; color: var(--ink); background: var(--butter); box-shadow: 0 10px 22px rgba(37,43,61,.18); }
+.chat-launcher { width: 56px; height: 56px; display: grid; place-content: center; gap: 1px; pointer-events: auto; touch-action: none; user-select: none; border: 1px solid #d0bd78; border-radius: 50%; color: var(--ink); background: var(--butter); box-shadow: 0 10px 22px rgba(37,43,61,.18); }
 .chat-launcher svg { width: 20px; height: 20px; margin: auto; }
 .chat-launcher span { font-size: 10px; line-height: 1; font-weight: 650; }
 .chat-panel { height: min(515px, calc(100vh - 168px)); display: grid; grid-template-rows: auto 1fr auto auto auto; pointer-events: auto; overflow: hidden; border: 1px solid rgba(80,84,119,.2); border-radius: 14px; background: rgba(251,248,241,.98); box-shadow: 0 18px 38px rgba(37,43,61,.2); }
