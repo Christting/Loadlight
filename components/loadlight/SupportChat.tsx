@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { MessageCircle, Send, Sparkles, X } from 'lucide-react';
 import { Lumi } from '@/components/loadlight/Lumi';
 
@@ -18,6 +18,20 @@ type LumiChatResponse = {
 type LumiStatusResponse = {
   online?: boolean;
 };
+
+type LauncherPosition = {
+  left: number;
+  top: number;
+};
+
+type DragState = LauncherPosition & {
+  pointerId: number;
+  startX: number;
+  startY: number;
+  moved: boolean;
+};
+
+const launcherPositionKey = 'loadlight-lumi-chat-position';
 
 const starterPrompts = [
   'I feel overwhelmed',
@@ -94,6 +108,10 @@ export function SupportChat() {
   const [draft, setDraft] = useState('');
   const [isReplying, setIsReplying] = useState(false);
   const [connectionLabel, setConnectionLabel] = useState('');
+  const [launcherPosition, setLauncherPosition] = useState<LauncherPosition | null>(null);
+  const chatRootRef = useRef<HTMLElement | null>(null);
+  const dragStateRef = useRef<DragState | null>(null);
+  const blockClickRef = useRef(false);
   const messageListRef = useRef<HTMLDivElement | null>(null);
 
   const latestTone = useMemo(() => {
@@ -107,6 +125,19 @@ export function SupportChat() {
   useEffect(() => {
     messageListRef.current?.scrollTo({ top: messageListRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, isReplying]);
+
+  useEffect(() => {
+    try {
+      const storedPosition = window.localStorage.getItem(launcherPositionKey);
+      if (!storedPosition) return;
+      const parsed = JSON.parse(storedPosition) as Partial<LauncherPosition>;
+      if (typeof parsed.left === 'number' && typeof parsed.top === 'number') {
+        setLauncherPosition({ left: parsed.left, top: parsed.top });
+      }
+    } catch {
+      setLauncherPosition(null);
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -129,6 +160,94 @@ export function SupportChat() {
       active = false;
     };
   }, [open]);
+
+  function getBoundedLauncherPosition(left: number, top: number) {
+    const frame = chatRootRef.current?.parentElement;
+    if (!frame) return { left, top };
+
+    const launcherSize = 56;
+    const edgeGap = 12;
+    const bottomNavSpace = 76;
+    const frameRect = frame.getBoundingClientRect();
+    const maxLeft = Math.max(edgeGap, frameRect.width - launcherSize - edgeGap);
+    const maxTop = Math.max(edgeGap, frameRect.height - launcherSize - bottomNavSpace);
+
+    return {
+      left: Math.min(Math.max(left, edgeGap), maxLeft),
+      top: Math.min(Math.max(top, edgeGap), maxTop),
+    };
+  }
+
+  function saveLauncherPosition(position: LauncherPosition) {
+    try {
+      window.localStorage.setItem(launcherPositionKey, JSON.stringify(position));
+    } catch {
+      // Local storage can be unavailable in restricted browser modes.
+    }
+  }
+
+  function startDrag(event: PointerEvent<HTMLButtonElement>) {
+    if (open) return;
+    const root = chatRootRef.current;
+    const frame = root?.parentElement;
+    if (!root || !frame) return;
+
+    const rootRect = root.getBoundingClientRect();
+    const frameRect = frame.getBoundingClientRect();
+
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      left: rootRect.left - frameRect.left,
+      top: rootRect.top - frameRect.top,
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveDrag(event: PointerEvent<HTMLButtonElement>) {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      dragState.moved = true;
+    }
+
+    setLauncherPosition(getBoundedLauncherPosition(dragState.left + deltaX, dragState.top + deltaY));
+  }
+
+  function endDrag(event: PointerEvent<HTMLButtonElement>) {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    const root = chatRootRef.current;
+    const frame = root?.parentElement;
+    if (root && frame && dragState.moved) {
+      const rootRect = root.getBoundingClientRect();
+      const frameRect = frame.getBoundingClientRect();
+      const finalPosition = getBoundedLauncherPosition(rootRect.left - frameRect.left, rootRect.top - frameRect.top);
+      setLauncherPosition(finalPosition);
+      saveLauncherPosition(finalPosition);
+      blockClickRef.current = true;
+      window.setTimeout(() => {
+        blockClickRef.current = false;
+      }, 0);
+    }
+
+    dragStateRef.current = null;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  }
+
+  function openChat() {
+    if (blockClickRef.current) {
+      blockClickRef.current = false;
+      return;
+    }
+    setOpen(true);
+  }
 
   async function fetchLumiReply(nextMessages: ChatMessage[], latestText: string) {
     try {
@@ -195,9 +314,24 @@ export function SupportChat() {
   }
 
   return (
-    <aside className={`support-chat ${open ? 'open' : ''}`} aria-label="Lumi support chat">
+    <aside
+      ref={chatRootRef}
+      className={`support-chat ${open ? 'open' : ''} ${launcherPosition && !open ? 'moved' : ''}`}
+      style={!open && launcherPosition ? launcherPosition : undefined}
+      aria-label="Lumi support chat"
+    >
       {!open ? (
-        <button className="chat-launcher" type="button" onClick={() => setOpen(true)} aria-label="Open Lumi support chat">
+        <button
+          className="chat-launcher"
+          type="button"
+          onClick={openChat}
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          aria-label="Open Lumi support chat"
+          title="Drag to move or tap to chat"
+        >
           <MessageCircle />
           <span>Talk</span>
         </button>
