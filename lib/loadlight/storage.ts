@@ -1,12 +1,20 @@
+import { thursdayTasks } from './demo-data';
 import type { StoredLoadLightState } from './types';
 
 export const STORAGE_KEY = 'loadlight.prototype.v1';
+
+const defaultTasks = thursdayTasks.map((task) => ({
+  ...task,
+  status: 'not-started' as const,
+}));
 
 export const defaultStoredState: StoredLoadLightState = {
   isLoggedIn: false,
   email: 'mia@student.edu',
   journalEntries: [],
+  taskDateOverrides: {},
   whatIfPlans: [],
+  tasks: defaultTasks,
 };
 
 export function loadStoredState(): StoredLoadLightState {
@@ -16,7 +24,8 @@ export function loadStoredState(): StoredLoadLightState {
     if (!raw) return defaultStoredState;
     const parsed = JSON.parse(raw) as StoredLoadLightState;
     const whatIfPlans = parsed.whatIfPlans?.length ? parsed.whatIfPlans : parsed.whatIfPlan ? [parsed.whatIfPlan] : [];
-    return { ...defaultStoredState, ...parsed, isLoggedIn: false, whatIfPlan: whatIfPlans[0], whatIfPlans };
+    const tasks = parsed.tasks?.length ? parsed.tasks : defaultStoredState.tasks;
+    return { ...defaultStoredState, ...parsed, isLoggedIn: false, whatIfPlan: whatIfPlans[0], whatIfPlans, tasks };
   } catch {
     return defaultStoredState;
   }

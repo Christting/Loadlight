@@ -10,9 +10,11 @@ export type Mood =
 
 export type CheckInMood = Exclude<Mood, 'recovering'>;
 export type Demand = 'low' | 'medium' | 'high';
-export type TaskCategory = 'academic' | 'work' | 'social' | 'errands' | 'personal';
+export type TaskCategory = 'academic' | 'work' | 'social' | 'personal' | 'wellbeing' | 'other';
 export type Flexibility = 'fixed' | 'flexible';
 export type LoadDimension = 'mental' | 'time' | 'physical' | 'social' | 'errands';
+export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskStatus = 'not-started' | 'in-progress' | 'done' | 'skipped';
 
 export type FiveLoads = Record<LoadDimension, number>;
 
@@ -30,9 +32,13 @@ export interface Task {
   durationHours: number;
   demand: Demand;
   category: TaskCategory;
+  customCategory?: string;
   flexibility: Flexibility;
   loadMix: Partial<Record<LoadDimension, number>>;
   isProposed?: boolean;
+  /** User override of the system-calculated Smart Priority. Undefined = use the calculated value. */
+  priorityOverride?: TaskPriority;
+  status?: TaskStatus;
 }
 
 export interface DayPlan {
@@ -56,7 +62,9 @@ export interface BalanceMove {
   taskId: string;
   title: string;
   fromDate: string;
+  fromDayLabel: string;
   toDate: string;
+  toDayLabel: string;
   reason: string;
   relocatedPoints: number;
 }
@@ -84,6 +92,9 @@ export interface StoredLoadLightState {
   email: string;
   journalEntries: JournalEntry[];
   selectedMood?: CheckInMood;
+  taskDateOverrides: Record<string, string>;
   whatIfPlan?: WhatIfPlan;
   whatIfPlans?: WhatIfPlan[];
+  tasks?: Task[];
 }
+
