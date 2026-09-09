@@ -15,6 +15,7 @@ export const defaultStoredState: StoredLoadLightState = {
   taskDateOverrides: {},
   whatIfPlans: [],
   tasks: defaultTasks,
+  planItems: [],
 };
 
 export function loadStoredState(): StoredLoadLightState {
@@ -25,7 +26,8 @@ export function loadStoredState(): StoredLoadLightState {
     const parsed = JSON.parse(raw) as StoredLoadLightState;
     const whatIfPlans = parsed.whatIfPlans?.length ? parsed.whatIfPlans : parsed.whatIfPlan ? [parsed.whatIfPlan] : [];
     const tasks = parsed.tasks?.length ? parsed.tasks : defaultStoredState.tasks;
-    return { ...defaultStoredState, ...parsed, isLoggedIn: false, whatIfPlan: whatIfPlans[0], whatIfPlans, tasks };
+    const planItems = parsed.planItems ?? [];
+    return { ...defaultStoredState, ...parsed, isLoggedIn: false, whatIfPlan: whatIfPlans[0], whatIfPlans, tasks, planItems };
   } catch {
     return defaultStoredState;
   }
