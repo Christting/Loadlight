@@ -6,9 +6,14 @@ export type Mood =
   | 'tired'
   | 'stressed'
   | 'overwhelmed'
-  | 'recovering';
+  | 'recovering'
+  | 'focused'
+  | 'thinking'
+  | 'relieved'
+  | 'sleepy'
+  | 'hello';
 
-export type CheckInMood = Exclude<Mood, 'recovering'>;
+export type CheckInMood = Exclude<Mood, 'recovering' | 'focused' | 'thinking' | 'relieved' | 'sleepy' | 'hello'>;
 export type Demand = 'low' | 'medium' | 'high';
 export type TaskCategory = 'academic' | 'work' | 'social' | 'personal' | 'wellbeing' | 'other';
 export type Flexibility = 'fixed' | 'flexible';
@@ -52,6 +57,8 @@ export interface JournalEntry {
   id: string;
   date: string;
   mood: CheckInMood;
+  title?: string;
+  tags?: string[];
   note: string;
   speechTranscript?: string;
   photoDataUrl?: string;
