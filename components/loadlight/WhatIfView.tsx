@@ -22,8 +22,6 @@ const loadRows = [
 ] as const;
 
 const baseWhatIfLoad = 78;
-const whatIfRangeLabel = '8-12 Sept';
-
 const defaultScenarioAdjustments: ScenarioAdjustments = {
   mental: 8,
   time: 10,
@@ -119,13 +117,13 @@ const dimensionLabels: Record<LoadDimension, string> = {
   errands: 'Errands',
 };
 
-function WhatIfHeader({ backLabel, label, onBack, title }: { backLabel?: string; label: string; onBack?: () => void; title: string }) {
-  return <header className={`whatif-header ${onBack ? '' : 'solo'}`}>
+function WhatIfHeader({ backLabel, label, onBack, title }: { backLabel?: string; label: string; onBack?: () => void; title?: string }) {
+  return <header className={`whatif-header ${onBack ? '' : 'solo'} ${title ? '' : 'compact'}`}>
     <div className="whatif-header-row">
       {onBack ? <button className="back-link" type="button" onClick={onBack}><ChevronLeft /> {backLabel}</button> : <span className="whatif-header-kicker">{label}</span>}
       <span className="whatif-header-chip">{onBack ? label : 'Guided check'}</span>
     </div>
-    <h1>{title}</h1>
+    {title && <h1>{title}</h1>}
   </header>;
 }
 
@@ -252,6 +250,13 @@ function scenarioIdFromTitle(title: string) {
   return `what-if-${slug || 'scenario'}`;
 }
 
+function formatDateLabel(value: string) {
+  if (!value) return 'Not set';
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
   const viewRef = useRef<HTMLDivElement | null>(null);
   const [step, setStep] = useState<ScenarioStep>('overview');
@@ -263,6 +268,8 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   const [reviewedPlanId, setReviewedPlanId] = useState<string | null>(null);
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [scenarioSearch, setScenarioSearch] = useState('');
+  const [scenarioStartDate, setScenarioStartDate] = useState('2026-09-08');
+  const [scenarioEndDate, setScenarioEndDate] = useState('2026-09-12');
 
   const savedPlans = stored.whatIfPlans?.length ? stored.whatIfPlans : stored.whatIfPlan ? [stored.whatIfPlan] : [];
   const reviewedPlan = savedPlans.find((plan) => plan.id === reviewedPlanId);
@@ -282,6 +289,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   const peakForecastDay = [...forecastDays].sort((a, b) => b.projected - a.projected)[0];
   const overviewForecast = scenarioForecast(latestPlan?.adjustments ?? defaultScenarioAdjustments, latestPlan?.projectedLoad);
   const overviewPeakDay = [...overviewForecast].sort((a, b) => b.projected - a.projected)[0];
+  const scenarioDateLabel = `${formatDateLabel(scenarioStartDate)} - ${formatDateLabel(scenarioEndDate)}`;
   const searchTerm = scenarioSearch.trim().toLowerCase();
   const filteredSavedPlans = searchTerm
     ? savedPlans.filter((plan) => {
@@ -307,7 +315,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
     return {
       id,
       title,
-      dateLabel: whatIfRangeLabel,
+      dateLabel: scenarioDateLabel,
       durationHours: 0,
       demand: projectedLoad >= 90 ? 'high' : 'medium',
       category: 'academic',
@@ -327,6 +335,8 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
     setScenarioName('New Major Project');
     setAdjustments(defaultScenarioAdjustments);
     setScenarioAnswers(defaultScenarioAnswers);
+    setScenarioStartDate('');
+    setScenarioEndDate('');
     setDefineStep(0);
     setReviewedPlanId(null);
     setEditingPlanId(null);
@@ -370,6 +380,8 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
       const nextAdjustments = reviewedPlan.adjustments ?? defaultScenarioAdjustments;
       setAdjustments(nextAdjustments);
       setScenarioAnswers(answersFromAdjustments(nextAdjustments));
+      setScenarioStartDate('');
+      setScenarioEndDate('');
       setEditingPlanId(reviewedPlan.id);
     }
     setReviewedPlanId(null);
@@ -433,7 +445,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   }
 
   if (step === 'define') return <div className="view-content what-if-view" ref={viewRef}>
-    <WhatIfHeader backLabel="Scenarios" label={editingPlan ? 'EDIT SCENARIO' : 'NEW SCENARIO'} onBack={backToOverview} title="Plan the change." />
+    <WhatIfHeader backLabel="Scenarios" label={editingPlan ? 'EDIT SCENARIO' : 'NEW SCENARIO'} onBack={backToOverview} />
     <section className="scenario-form" aria-labelledby="scenario-form-title">
       <div className="form-heading">
         <div><h2 id="scenario-form-title">Let’s test it first.</h2><p>Answer one thing at a time. Lumi will estimate the load.</p></div>
@@ -446,8 +458,12 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
       {defineStep === 0 && <div className="wizard-panel">
         <span className="scenario-step-label"><span>1</span><strong>Name the change</strong></span>
         <h3>What might I say yes to?</h3>
-        <p>Give this possible commitment a name so the result is easy to find later.</p>
+        <p>Give this possible commitment a name and choose when it will happen.</p>
         <div className="plain-field"><label htmlFor="scenario-name">Scenario name</label><Input id="scenario-name" value={scenarioName} onChange={(event) => setScenarioName(event.target.value)} /></div>
+        <div className="date-input-grid">
+          <div className="plain-field"><label htmlFor="scenario-start">Start date</label><Input id="scenario-start" type="date" value={scenarioStartDate} onChange={(event) => setScenarioStartDate(event.target.value)} /></div>
+          <div className="plain-field"><label htmlFor="scenario-end">End date</label><Input id="scenario-end" type="date" value={scenarioEndDate} onChange={(event) => setScenarioEndDate(event.target.value)} /></div>
+        </div>
       </div>}
       {currentQuestion && <fieldset className="wizard-panel scenario-choice-group">
         <legend>{currentQuestion.prompt}</legend>
@@ -469,8 +485,8 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
         <p>If this still feels realistic, show the full impact before deciding.</p>
         <div className="date-range">
           <span>Affected date range</span>
-          <strong>Starts: Monday, 8 Sept</strong>
-          <strong>Ends: Friday, 12 Sept</strong>
+          <strong>Starts: {formatDateLabel(scenarioStartDate)}</strong>
+          <strong>Ends: {formatDateLabel(scenarioEndDate)}</strong>
         </div>
         <div className="draft-preview">
           <span><small>Now</small><strong>{baseWhatIfLoad}%</strong></span>
@@ -488,7 +504,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
       </div>}
       <div className="wizard-actions">
         <Button type="button" variant="outline" onClick={previousDefineStep}>{defineStep === 0 ? 'Cancel' : 'Back'}</Button>
-        <Button type="button" className="simulate-button" onClick={nextDefineStep} disabled={defineStep === 0 && !scenarioName.trim()}>
+        <Button type="button" className="simulate-button" onClick={nextDefineStep} disabled={defineStep === 0 && (!scenarioName.trim() || !scenarioStartDate || !scenarioEndDate)}>
           {isReviewStep ? 'Show me the impact' : 'Next'} {isReviewStep && <WandSparkles />}
         </Button>
       </div>
@@ -496,7 +512,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   </div>;
 
   if (step === 'processing') return <div className="view-content what-if-view processing-view" ref={viewRef}>
-    <WhatIfHeader label="PROCESSING" title="Calculating impact." />
+    <WhatIfHeader label="PROCESSING" />
     <section className="processing-card" aria-label="Processing scenario data">
       <Lumi state="recovering" size="large" />
       <LoaderCircle className="spin-icon" aria-hidden="true" />
@@ -507,33 +523,30 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   </div>;
 
   if (step === 'results') return <div className="view-content what-if-view" ref={viewRef}>
-    <WhatIfHeader backLabel="Edit" label="SCENARIO RESULTS" onBack={editResult} title={reviewedPlan?.title || scenarioName || 'New scenario'} />
-    <section className={`result-card ${resultStatus.tone}`} aria-labelledby="result-title">
-      <div className="result-heading">
-        <span>{reviewedPlan?.title || scenarioName || 'New scenario'}</span>
-        <h2 id="result-title">Projected load: {resultLoad}%</h2>
+    <WhatIfHeader backLabel="Edit" label="SCENARIO RESULTS" onBack={editResult} />
+    <section className={`whatif-simulator-card ${resultStatus.tone}`} aria-labelledby="result-title">
+      <div className="simulator-question">
+        <div>
+          <span className="panel-kicker">PRESSURE SIMULATOR</span>
+          <h2 id="result-title">What if I accept this?</h2>
+          <p>{reviewedPlan?.title || scenarioName || 'New scenario'}</p>
+        </div>
+        <Lumi state={resultStatus.state} size="small" />
       </div>
-      <div className="decision-strip">
-        <span>{resultDecision.label}</span>
-        <small>{resultDecision.note}</small>
+      <div className="simulator-rings">
+        <div className="load-ring steady" style={{ '--ring-value': `${baseWhatIfLoad}%` } as React.CSSProperties}><strong>{baseWhatIfLoad}%</strong><small>Current</small></div>
+        <ArrowRight aria-hidden="true" />
+        <div className={`load-ring ${resultStatus.tone}`} style={{ '--ring-value': `${Math.min(100, resultLoad)}%` } as React.CSSProperties}><strong>{resultLoad}%</strong><small>Future</small></div>
       </div>
-      <div className="lumi-comparison"><Lumi state="steady" size="small" /><ArrowRight aria-hidden="true" /><Lumi state={resultStatus.state} size="small" /></div>
-      <div className="impact-meter" aria-label={`Load changes from ${baseWhatIfLoad} percent to ${resultLoad} percent`}>
-        <span><small>Now</small><strong>{baseWhatIfLoad}%</strong></span>
-        <i aria-hidden="true" />
-        <span><small>After</small><strong>{resultLoad}%</strong></span>
+      <div className="simulator-breakdown" aria-label="Estimated pressure changes">
+        {loadRows.map((row) => <p key={row.key}>
+          <span><i className={`load-mark ${row.tone}`}>{row.mark}</i>{dimensionLabels[row.key]}</span>
+          <strong>{formatAdjustment(activeAdjustments[row.key])}</strong>
+        </p>)}
       </div>
-      <div className="summary-pair"><span><small>Current</small><strong>{reviewedPlan?.currentLoad ?? baseWhatIfLoad}%</strong></span><span><small>Simulated</small><strong>{resultLoad}%</strong></span></div>
-      <p>{recommendation}</p>
-    </section>
-    <section className="forecast-card" aria-labelledby="forecast-title">
-      <div className="section-title"><div><h2 id="forecast-title">Future load map</h2></div><small>Peak {peakForecastDay.dayLabel} · {peakForecastDay.projected}%</small></div>
-      <div className="forecast-bars">
-        {forecastDays.map((day) => <span className={day.tone} key={day.dayLabel}>
-          <small>{day.dayLabel}</small>
-          <i style={{ height: `${Math.min(100, Math.max(26, day.projected))}%` }} />
-          <strong>{day.projected}%</strong>
-        </span>)}
+      <div className="simulator-warning">
+        <strong>{resultDecision.label}</strong>
+        <p>{recommendation}</p>
       </div>
     </section>
     <section className="editorial-section" aria-labelledby="comparison-title">
@@ -560,14 +573,13 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
       {suggestions.map((suggestion, index) => <article key={suggestion}><span>{index + 1}</span><p>{suggestion}</p></article>)}
     </section>
     <section className="result-actions">
-      <Button type="button" className="primary-action" onClick={saveScenario}><Save /> {editingPlan ? 'Update scenario' : reviewedPlan ? 'Save as copy' : 'Save scenario'}</Button>
-      <Button type="button" variant="outline" onClick={editResult}><RefreshCcw /> Adjust</Button>
-      <Button type="button" variant="outline" onClick={backToOverview}>Back to list</Button>
+      <Button type="button" className="primary-action accept-choice" onClick={saveScenario}><Save /> Accept and save</Button>
+      <Button type="button" variant="outline" className="reject-choice" onClick={editResult}><RefreshCcw /> Reject or adjust</Button>
     </section>
   </div>;
 
   return <div className="view-content what-if-view" ref={viewRef}>
-    <WhatIfHeader label={timelineLabels.today} title="Can I take this on?" />
+    <WhatIfHeader label={timelineLabels.today} />
     <section className="whatif-dashboard-card" aria-labelledby="whatif-dashboard-title">
       <div className="whatif-card-title">
         <span>Before I say yes</span>
@@ -586,15 +598,10 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
           <Button type="button" className="primary-action" onClick={startCustomScenario}><Plus /> Try my own change</Button>
         </div>
       </div>
-      <div className="flow-steps" aria-label="Scenario flow">
-        <span><strong>1</strong><small>Add the change</small></span>
-        <span><strong>2</strong><small>Answer questions</small></span>
-        <span><strong>3</strong><small>Save the answer</small></span>
+      <div className="mini-forecast" aria-hidden="true">
+        {overviewForecast.map((day) => <span className={day.tone} key={day.dayLabel}><i style={{ height: `${Math.max(24, day.projected * 0.58)}%` }} /><small>{day.dayLabel}</small></span>)}
       </div>
-      <div className="mini-forecast" aria-label="Quick future load preview">
-        {overviewForecast.map((day) => <span className={day.tone} key={day.dayLabel}><i style={{ height: `${Math.min(100, Math.max(22, day.projected))}%` }} /><small>{day.dayLabel}</small></span>)}
-      </div>
-      <div className="radar-strip">
+      <div className="whatif-soft-summary" aria-label="Forecast summary">
         <span><small>Peak day</small><strong>{overviewPeakDay.dayLabel}</strong></span>
         <span><small>Forecast</small><strong>{overviewPeakDay.projected}%</strong></span>
       </div>
