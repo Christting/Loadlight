@@ -321,23 +321,24 @@ h2 { margin-bottom: 0; font-size: 25px; line-height: 1.2; font-weight: 520; lett
 .load-figure.danger { color: var(--danger); }
 
 .task-list { display: grid; gap: 10px; margin-bottom: 18px; }
-.task-row { display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 12px; padding: 12px 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.4); }
+.task-row { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.4); }
 .task-row.closed { opacity: .6; }
-.status-toggle-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 550; color: var(--muted); background: transparent; white-space: nowrap; }
+.task-row-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.task-row-header strong { font-size: 15px; font-weight: 540; }
+.status-toggle-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 550; color: var(--muted); background: transparent; white-space: nowrap; flex-shrink: 0; }
 .status-toggle-btn svg { width: 14px; }
 .status-toggle-btn.in-progress { color: var(--indigo); border-color: var(--indigo); }
 .status-toggle-btn.done { color: #fff; background: var(--indigo); border-color: var(--indigo); }
-.status-toggle-btn.skipped { color: var(--muted); background: rgba(151,81,88,.1); }
 .status-toggle-btn.static { cursor: default; }
+.done-text { text-decoration: line-through; color: var(--muted); }
 .task-info { display: grid; gap: 4px; min-width: 0; }
-.task-info > strong { font-size: 15px; font-weight: 540; }
 .task-field { margin: 0; font-size: 13px; color: var(--ink); }
 .task-field .field-label { display: inline-block; min-width: 96px; font-size: 12px; color: var(--muted); }
-.task-actions { display: grid; justify-items: end; gap: 6px; }
-.task-actions small { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-.task-actions button { width: 26px; height: 26px; display: grid; place-content: center; border: 0; color: var(--muted); background: transparent; padding: 0; }
-.task-actions button:hover { color: var(--ink); }
-.task-actions button svg { width: 14px; }
+.task-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.text-action-btn { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 6px; padding: 5px 9px; font-size: 12px; color: var(--muted); background: transparent; white-space: nowrap; }
+.text-action-btn svg { width: 13px; }
+.text-action-btn.complete-btn { color: #fff; background: var(--indigo); border-color: var(--indigo); }
+.completed-label { font-size: 11px; color: var(--muted); }
 
 .add-task-button { width: 100%; justify-content: center; }
 .task-form { display: grid; gap: 14px; margin-top: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.5); }
@@ -345,6 +346,37 @@ h2 { margin-bottom: 0; font-size: 25px; line-height: 1.2; font-weight: 520; lett
 .task-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .task-form-actions { display: flex; gap: 10px; }
 .task-form-actions button { flex: 1; justify-content: center; }
+
+.schedule-chip { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; border: 1px dashed var(--line); border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--muted); background: transparent; }
+.schedule-chip svg { width: 13px; }
+.schedule-display { margin-top: 6px; padding: 8px 10px; border-radius: 6px; background: rgba(83,74,183,.06); border: 1px solid rgba(83,74,183,.2); }
+.schedule-line { margin: 0; font-size: 12px; color: var(--ink); }
+.schedule-line + .schedule-line { margin-top: 2px; }
+.edit-schedule-link { margin-top: 6px; border: 0; background: transparent; padding: 0; font-size: 12px; color: var(--indigo); text-decoration: underline; }
+.schedule-form { display: grid; gap: 10px; margin-top: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.5); }
+.schedule-form label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+.schedule-form-times { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.schedule-form-actions { display: flex; align-items: center; gap: 8px; }
+.schedule-form-actions button { flex: 1; justify-content: center; }
+.schedule-form-actions .text-action-btn { flex: none; justify-content: flex-start; color: var(--danger); border-color: rgba(151,81,88,.3); }
+
+.week-entry-list { display: grid; gap: 8px; margin-bottom: 14px; }
+.week-entry { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.4); }
+.week-entry-time { flex-shrink: 0; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 92px; }
+.week-entry-body { flex: 1; display: grid; gap: 2px; }
+.week-entry-body strong { font-size: 14px; font-weight: 540; }
+.week-entry-source { font-size: 12px; color: var(--muted); }
+.week-entry-delete { border: 0; background: transparent; color: var(--muted); padding: 4px; }
+.week-entry-delete svg { width: 14px; }
+.week-entry-edit { flex-shrink: 0; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font-size: 11px; color: var(--indigo); background: transparent; }
+.week-entry-editor { grid-column: 1 / -1; margin-top: 6px; }
+.week-entry-plan-actions { display: flex; align-items: center; gap: 4px; }
+.week-entry-plan-actions .week-entry-edit { display: grid; place-content: center; width: 26px; height: 26px; padding: 0; }
+.week-entry-plan-actions .week-entry-edit svg { width: 13px; }
+.add-to-plan-button { width: 100%; justify-content: center; }
+.plan-form { display: grid; gap: 10px; margin-top: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.5); }
+.plan-form label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+.unscheduled-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.4); }
 
 .task-form-fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
 .task-form-fieldset legend { font-size: 13px; color: var(--muted); padding: 0; margin-bottom: 2px; }
@@ -368,8 +400,11 @@ h2 { margin-bottom: 0; font-size: 25px; line-height: 1.2; font-weight: 520; lett
 .tasks-mode-toggle button.active { background: var(--indigo); border-color: var(--indigo); color: #fff; font-weight: 560; }
 
 .week-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; }
-.week-tabs button { flex: 0 0 auto; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; font-size: 13px; color: var(--muted); }
+.week-tabs button { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 12px; background: transparent; font-size: 11px; color: var(--muted); min-width: 52px; }
 .week-tabs button.active { background: var(--indigo); border-color: var(--indigo); color: #fff; font-weight: 560; }
+.week-tab-day { font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+.week-tab-date { font-size: 15px; font-weight: 600; }
+.week-tab-pts { font-size: 10px; opacity: .8; }
 .week-day-summary { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
 .result-card { display: grid; gap: 14px; margin: 0 0 35px; padding: 20px 18px; border: 1px solid rgba(80,84,119,.14); border-radius: 8px; background: rgba(222,219,234,.88); box-shadow: 0 12px 24px rgba(48,45,42,.09); }
 .result-card.warning { background: rgba(239,211,111,.18); }

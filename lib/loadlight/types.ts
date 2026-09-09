@@ -44,6 +44,14 @@ export interface Task {
   /** User override of the system-calculated Smart Priority. Undefined = use the calculated value. */
   priorityOverride?: TaskPriority;
   status?: TaskStatus;
+  /** Optional — when the student actually plans to work on this, separate from the due date. */
+  scheduledDate?: string;
+  startTime?: string;
+  endTime?: string;
+  /** True if this schedule was placed automatically by the system rather than chosen by the student. */
+  autoScheduled?: boolean;
+  /** Minutes before the scheduled start time to remind the student. Undefined = no reminder. */
+  reminderMinutesBefore?: number;
 }
 
 export interface DayPlan {
@@ -94,6 +102,14 @@ export interface WhatIfPlan {
   savedAt: string;
 }
 
+export interface PlanItem {
+  id: string;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime?: string;
+}
+
 export interface StoredLoadLightState {
   isLoggedIn: boolean;
   email: string;
@@ -103,5 +119,5 @@ export interface StoredLoadLightState {
   whatIfPlan?: WhatIfPlan;
   whatIfPlans?: WhatIfPlan[];
   tasks?: Task[];
+  planItems?: PlanItem[];
 }
-

@@ -1,5 +1,5 @@
 import { DEMO_DATES, profile, proposedCafeShift, thursdayTasks } from './demo-data';
-import type { BalanceMove, Demand, Task, TaskPriority } from './types';
+import type { BalanceMove, Demand, PlanItem, Task, TaskPriority } from './types';
 
 export const demandWeights: Record<Demand, number> = {
   low: 0.7,
@@ -15,6 +15,20 @@ export function taskLoadPoints(task: Task): number {
 
 export function dailyTaskLoad(tasks: Task[]): number {
   return tasks.reduce((total, task) => total + taskLoadPoints(task), 0);
+}
+
+// Personal plan items don't have a demand rating, so they're weighted as
+// "medium" — same scale as a task, just without a heavy/light distinction.
+export function planItemDurationHours(item: PlanItem): number {
+  if (!item.endTime) return 0;
+  const [startHour, startMinute] = item.startTime.split(':').map(Number);
+  const [endHour, endMinute] = item.endTime.split(':').map(Number);
+  const minutes = endHour * 60 + endMinute - (startHour * 60 + startMinute);
+  return Math.max(minutes, 0) / 60;
+}
+
+export function planItemLoadPoints(item: PlanItem): number {
+  return Math.round(planItemDurationHours(item) * demandWeights.medium * profile.loadPointsPerWeightedHour);
 }
 
 // Load points still "carried" — done/skipped tasks stop counting toward capacity.
