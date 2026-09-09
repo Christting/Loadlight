@@ -1,7 +1,7 @@
 'use client';
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, BookOpenText, Camera, Check, CircleUserRound, Home, ListChecks, LogOut, Mic, Scale, Search, SquarePen, WandSparkles, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Bell, BookOpenText, Camera, Check, ChevronRight, CircleHelp, CircleUserRound, Home, ListChecks, LockKeyhole, LogOut, Mic, Moon, Palette, Scale, Search, ShieldCheck, SquarePen, UserRoundCog, WandSparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,14 +41,22 @@ const navItems = [
   { id: 'me' as const, label: 'Me', icon: CircleUserRound },
 ];
 
+const topBarTitles: Record<AppView, string> = {
+  home: 'Today',
+  tasks: 'My Tasks',
+  'what-if': 'Can I take this?',
+  balance: 'Balance Room',
+  me: 'Profile',
+};
+
 function Header({ label, title }: { label: string; title: string }) {
   return <header className="page-header"><p className="date-label">{label}</p><h1>{title}</h1></header>;
 }
 
-function AppTopBar({ onCompose }: { onCompose: () => void }) {
+function AppTopBar({ onCompose, title }: { onCompose: () => void; title: string }) {
   return <header className="app-topbar" aria-label="LoadLight app header">
     <span className="topbar-spacer" aria-hidden="true" />
-    <div className="topbar-title"><strong>LoadLight</strong></div>
+    <div className="topbar-title"><strong>{title}</strong></div>
     <Button type="button" variant="ghost" size="icon" className="topbar-icon compose" aria-label="Write today note" onClick={onCompose}><SquarePen /></Button>
   </header>;
 }
@@ -279,7 +287,66 @@ function TeammatePlaceholder({ title }: { title: 'Tasks' | 'What-if' | 'Balance'
 }
 
 function MeView({ onLogout }: { onLogout: () => void }) {
-  return <div className="view-content placeholder-view"><div><p className="micro-label">ACCOUNT</p><h1>Me</h1><span>Coming from teammate</span><Button variant="outline" className="logout-button" onClick={onLogout}><LogOut /> Log out</Button></div></div>;
+  const [name, setName] = useState('Mia');
+  const [email, setEmail] = useState('mia@student.edu');
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [dailyCheckIn, setDailyCheckIn] = useState(true);
+  const [gentleNudges, setGentleNudges] = useState(true);
+  const [privateJournal, setPrivateJournal] = useState(true);
+  const [calmMode, setCalmMode] = useState(false);
+  const [loadLimit, setLoadLimit] = useState(85);
+  const [activeSheet, setActiveSheet] = useState<'account' | 'privacy' | 'support' | null>(null);
+
+  return <div className="view-content me-view">
+    <section className="me-profile-card" aria-labelledby="me-title">
+      <div className="me-avatar"><Lumi state="steady" size="small" /></div>
+      <div>
+        <p className="micro-label">MY SPACE</p>
+        <h1 id="me-title">{name}</h1>
+        <span>{email}</span>
+      </div>
+      <Button type="button" variant="ghost" size="icon" aria-label="Edit profile" onClick={() => setEditingProfile((open) => !open)}><SquarePen /></Button>
+    </section>
+
+    {editingProfile && <section className="settings-card profile-editor" aria-label="Edit profile">
+      <label>Name<Input value={name} onChange={(event) => setName(event.target.value)} /></label>
+      <label>Email<Input value={email} onChange={(event) => setEmail(event.target.value)} /></label>
+      <Button type="button" className="primary-action" onClick={() => setEditingProfile(false)}><Check /> Save profile</Button>
+    </section>}
+
+    <section className="settings-card" aria-labelledby="load-preferences-title">
+      <div className="settings-title"><span><Scale /></span><div><h2 id="load-preferences-title">Load preferences</h2><p>Tell Lumi when your week starts feeling too full.</p></div></div>
+      <label className="load-limit-control">
+        <span>Comfort limit <strong>{loadLimit}%</strong></span>
+        <input type="range" min="60" max="100" value={loadLimit} onChange={(event) => setLoadLimit(Number(event.target.value))} />
+      </label>
+      <button type="button" className={`setting-row ${calmMode ? 'enabled' : ''}`} onClick={() => setCalmMode((enabled) => !enabled)}>
+        <span><Moon /> Calm mode</span>
+        <i>{calmMode ? 'On' : 'Off'}</i>
+      </button>
+    </section>
+
+    <section className="settings-card" aria-labelledby="settings-title">
+      <div className="settings-title"><span><UserRoundCog /></span><div><h2 id="settings-title">Settings</h2><p>Small switches for daily use.</p></div></div>
+      <button type="button" className={`setting-row ${dailyCheckIn ? 'enabled' : ''}`} onClick={() => setDailyCheckIn((enabled) => !enabled)}><span><Bell /> Daily check-in</span><i>{dailyCheckIn ? 'On' : 'Off'}</i></button>
+      <button type="button" className={`setting-row ${gentleNudges ? 'enabled' : ''}`} onClick={() => setGentleNudges((enabled) => !enabled)}><span><WandSparkles /> Gentle nudges</span><i>{gentleNudges ? 'On' : 'Off'}</i></button>
+      <button type="button" className={`setting-row ${privateJournal ? 'enabled' : ''}`} onClick={() => setPrivateJournal((enabled) => !enabled)}><span><LockKeyhole /> Private journal</span><i>{privateJournal ? 'Locked' : 'Open'}</i></button>
+    </section>
+
+    <section className="settings-card settings-links" aria-label="Account links">
+      <button type="button" onClick={() => setActiveSheet('account')}><span><Palette /> Appearance</span><ChevronRight /></button>
+      <button type="button" onClick={() => setActiveSheet('privacy')}><span><ShieldCheck /> Privacy and data</span><ChevronRight /></button>
+      <button type="button" onClick={() => setActiveSheet('support')}><span><CircleHelp /> Help and feedback</span><ChevronRight /></button>
+    </section>
+
+    <Button variant="outline" className="logout-button" onClick={onLogout}><LogOut /> Log out</Button>
+
+    {activeSheet && <InfoSheet title={activeSheet === 'account' ? 'Appearance' : activeSheet === 'privacy' ? 'Privacy and data' : 'Help and feedback'} onClose={() => setActiveSheet(null)}>
+      {activeSheet === 'account' && <p className="sheet-body">Theme: LoadLight soft cream and purple. Calm mode can reduce visual pressure during stressful days.</p>}
+      {activeSheet === 'privacy' && <p className="sheet-body">Prototype data stays on this device through local storage. Journal privacy is shown as a setting so the flow feels complete.</p>}
+      {activeSheet === 'support' && <p className="sheet-body">Need help? Use Lumi chat for a soft check-in, or share feedback with the team during the prototype demo.</p>}
+    </InfoSheet>}
+  </div>;
 }
 
 function InfoSheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
@@ -306,8 +373,8 @@ export default function LoadLightApp() {
   if (!hydrated) return <main className="loading-page"><span>✦</span><p>Making a little room…</p></main>;
   if (!stored.isLoggedIn) return <LoginView onLogin={login} />;
   if (enteringDashboard) return <DashboardLoadingView />;
-  return <main className="app-shell"><section className="phone-frame with-app-topbar" aria-label="LoadLight student workload manager">
-    <AppTopBar onCompose={composeToday} />
+  return <main className="app-shell"><section className={`phone-frame ${view === 'balance' ? '' : 'with-app-topbar'}`} aria-label="LoadLight student workload manager">
+    {view !== 'balance' && <AppTopBar title={topBarTitles[view]} onCompose={composeToday} />}
     {view === 'home' && <HomeView stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} />}{view === 'what-if' && <WhatIfView stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView />}{view === 'me' && <MeView onLogout={logout} />}
     <nav className="bottom-nav" aria-label="Primary navigation">{navItems.map(({ id, label, icon: Icon, featured }) => <Button key={id} variant="ghost" className={`${view === id ? 'active' : ''} ${featured ? 'featured' : ''}`} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}><Icon /><span>{label}</span></Button>)}</nav>
     <SupportChat />
