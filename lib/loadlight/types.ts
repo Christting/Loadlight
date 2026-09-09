@@ -65,6 +65,7 @@ export interface JournalEntry {
   id: string;
   date: string;
   mood: CheckInMood;
+  moodLabel?: string;
   title?: string;
   tags?: string[];
   note: string;

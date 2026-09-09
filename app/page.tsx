@@ -1,7 +1,7 @@
 'use client';
 
-import { ChangeEvent, useEffect, useState } from 'react';
-import { ArrowRight, Camera, Check, ChevronRight, CircleUserRound, Home, ListChecks, LogOut, Mic, Scale, SquarePen, WandSparkles, X } from 'lucide-react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, BookOpenText, Camera, Check, CircleUserRound, Home, ListChecks, LogOut, Mic, Scale, Search, SquarePen, WandSparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -73,6 +73,9 @@ function DashboardLoadingView() {
 
 function HomeView({ stored, onSave, onNavigate, composeSignal }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onNavigate: (view: AppView) => void; composeSignal: number }) {
   const [selectedMood, setSelectedMood] = useState<CheckInMood>(stored.selectedMood ?? 'steady');
+  const [pendingJournalMood, setPendingJournalMood] = useState<CheckInMood | null>(null);
+  const [customJournalMood, setCustomJournalMood] = useState('');
+  const [customMoodOpen, setCustomMoodOpen] = useState(false);
   const [journalPageOpen, setJournalPageOpen] = useState(false);
   const [journalStep, setJournalStep] = useState<'mood' | 'editor'>('mood');
   const [journalTitle, setJournalTitle] = useState('');
@@ -80,22 +83,41 @@ function HomeView({ stored, onSave, onNavigate, composeSignal }: { stored: Store
   const [journalNote, setJournalNote] = useState('');
   const [speechText, setSpeechText] = useState('');
   const [photoDataUrl, setPhotoDataUrl] = useState('');
-  const [journalOpen, setJournalOpen] = useState(false);
   const [replayOpen, setReplayOpen] = useState(false);
+  const [journalHistoryOpen, setJournalHistoryOpen] = useState(false);
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyMoodFilter, setHistoryMoodFilter] = useState<'all' | CheckInMood | 'custom'>('all');
+  const [historyDateFilter, setHistoryDateFilter] = useState('all');
   const [insightOpen, setInsightOpen] = useState(false);
   const [mediaMessage, setMediaMessage] = useState('');
+  const cardCarouselRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (!composeSignal) return;
+    setPendingJournalMood(null);
+    setCustomJournalMood('');
+    setCustomMoodOpen(false);
     setJournalStep('mood');
     setJournalPageOpen(true);
   }, [composeSignal]);
 
-  function chooseMood(mood: CheckInMood) { setSelectedMood(mood); setJournalStep('editor'); setJournalPageOpen(true); }
-  function openJournalPage() { setJournalStep('mood'); setJournalPageOpen(true); }
-  function chooseJournalMood(mood: CheckInMood) { setSelectedMood(mood); setJournalStep('editor'); }
+  function openJournalPage() { setPendingJournalMood(null); setCustomJournalMood(''); setCustomMoodOpen(false); setJournalStep('mood'); setJournalPageOpen(true); }
+  function chooseJournalMood(mood: CheckInMood) { setPendingJournalMood(mood); setCustomJournalMood(''); setCustomMoodOpen(false); }
+  function chooseCustomMood() { setPendingJournalMood('steady'); setCustomMoodOpen(true); }
+  function continueJournalMood() {
+    if (!pendingJournalMood || (customMoodOpen && !customJournalMood.trim())) return;
+    setSelectedMood(pendingJournalMood);
+    setJournalStep('editor');
+  }
   function closeJournalPage() {
     if (journalStep === 'editor') { setJournalStep('mood'); return; }
     setJournalPageOpen(false);
+  }
+  function moveCards(direction: 'left' | 'right') {
+    const carousel = cardCarouselRef.current;
+    if (!carousel) return;
+    const firstCard = carousel.querySelector<HTMLElement>('.home-swipe-card');
+    const distance = firstCard ? firstCard.offsetWidth + 12 : carousel.clientWidth * .82;
+    carousel.scrollBy({ left: direction === 'right' ? distance : -distance, behavior: 'smooth' });
   }
   function toggleJournalTag(tag: string) {
     setJournalTags((tags) => tags.includes(tag) ? tags.filter((item) => item !== tag) : [...tags, tag]);
@@ -113,29 +135,72 @@ function HomeView({ stored, onSave, onNavigate, composeSignal }: { stored: Store
   }
   function saveJournal() {
     const cleanTitle = journalTitle.trim();
-    const entry: JournalEntry = { id: `journal-${Date.now()}`, date: timelineLabels.today, mood: selectedMood, title: cleanTitle || undefined, tags: journalTags.length ? journalTags : undefined, note: journalNote.trim(), speechTranscript: speechText || undefined, photoDataUrl: photoDataUrl || undefined };
+    const cleanMood = customJournalMood.trim();
+    const entry: JournalEntry = { id: `journal-${Date.now()}`, date: timelineLabels.today, mood: selectedMood, moodLabel: cleanMood || undefined, title: cleanTitle || undefined, tags: journalTags.length ? journalTags : undefined, note: journalNote.trim(), speechTranscript: speechText || undefined, photoDataUrl: photoDataUrl || undefined };
     onSave({ ...stored, selectedMood, journalEntries: [entry, ...stored.journalEntries].slice(0, 12) }, 'Check-in and journal saved on this device.');
-    setJournalTitle(''); setJournalNote(''); setSpeechText(''); setPhotoDataUrl(''); setJournalOpen(false); setJournalStep('mood'); setJournalPageOpen(false);
+    setJournalTitle(''); setJournalNote(''); setSpeechText(''); setPhotoDataUrl(''); setPendingJournalMood(null); setCustomJournalMood(''); setCustomMoodOpen(false); setJournalStep('mood'); setJournalPageOpen(false);
+  }
+  const todayTaskPreview = stored.tasks?.slice(0, 4) ?? [];
+  const historyCount = stored.journalEntries.length;
+  const fallbackJournalHistory: JournalEntry[] = [
+    { id: 'demo-note-1', date: 'Monday, 1 September', moodLabel: 'Calm', title: 'A softer start', note: 'I had space between classes and it helped me breathe.' },
+    { id: 'demo-note-2', date: 'Wednesday, 3 September', moodLabel: 'Tired', title: 'A lot on my mind', note: 'Prototype review prep made the day feel heavier.' },
+  ].map((entry) => ({ ...entry, mood: entry.moodLabel === 'Tired' ? 'tired' : 'calm' }));
+  const journalHistory = stored.journalEntries.length ? stored.journalEntries : fallbackJournalHistory;
+  function historyDateParts(date: string) {
+    const [dayPart = date, rest = ''] = date.split(', ');
+    return { day: dayPart.slice(0, 3), date: rest.replace('September', 'Sep') || dayPart };
+  }
+  const historyDates = Array.from(new Set(journalHistory.map((entry) => entry.date)));
+  const filteredJournalHistory = journalHistory.filter((entry) => {
+    const search = historySearch.trim().toLowerCase();
+    const text = [entry.title, entry.date, entry.moodLabel, entry.mood, entry.note, entry.speechTranscript, ...(entry.tags ?? [])].filter(Boolean).join(' ').toLowerCase();
+    const matchesSearch = !search || text.includes(search);
+    const matchesMood = historyMoodFilter === 'all' || (historyMoodFilter === 'custom' ? Boolean(entry.moodLabel) : entry.mood === historyMoodFilter);
+    const matchesDate = historyDateFilter === 'all' || entry.date === historyDateFilter;
+    return matchesSearch && matchesMood && matchesDate;
+  });
+  function togglePreviewTask(taskId: string) {
+    const tasks = stored.tasks ?? [];
+    onSave(
+      { ...stored, tasks: tasks.map((task) => task.id === taskId ? { ...task, status: task.status === 'done' ? 'not-started' : 'done' } : task) },
+      'Today task updated.',
+    );
   }
 
   return <div className="view-content home-view">
     <Header label="GOOD AFTERNOON" title="Hi, Mia." />
     <p className="home-intro">{timelineLabels.today}</p>
 
-    <section className="home-card-carousel" aria-label="Today cards">
-      <article className="home-swipe-card load-card" aria-label="Tuesday current load is 78 percent">
-        <div className="home-card-meta"><span>{timelineLabels.today}</span><strong>Current load</strong></div>
-        <Lumi state="tired" size="large" />
-        <div className="hero-copy"><h2>Getting a little full.</h2><p className="hero-load"><strong>78%</strong> of today’s load</p><p>Thursday may need a little more room.</p></div>
-      </article>
-      <article className="home-swipe-card diary-card" aria-label="Write today journal">
-        <div className="diary-card-date"><strong>09</strong><span>2026 September</span></div>
-        <Lumi state="sleepy" size="large" />
-        <div className="diary-card-copy"><span>Tonight, leave it here.</span><p>Write one small note, mood, photo, or voice memory with Lumi.</p></div>
-        <Button className="primary-action diary-card-action" type="button" onClick={openJournalPage}>Record today <ArrowRight /></Button>
-      </article>
-    </section>
-    <div className="carousel-hint" aria-hidden="true"><span /><span /></div>
+    <div className="home-carousel-wrap">
+      <Button type="button" variant="ghost" size="icon" className="carousel-arrow carousel-arrow-left" aria-label="Previous card" onClick={() => moveCards('left')}><ArrowLeft /></Button>
+      <section className="home-card-carousel" aria-label="Today cards" ref={cardCarouselRef}>
+        <article className="home-swipe-card load-card" aria-label="Tuesday current load is 78 percent">
+          <div className="hero-copy"><div className="home-card-meta"><strong>Current load</strong><span>Tue, 2 Sep</span></div><h2>Getting a little full.</h2><p className="hero-load"><strong>78%</strong><span>of today’s load</span></p><p>Thursday may need a little more room.</p></div>
+          <div className="card-lumi-panel"><Lumi state="tired" size="large" /><span>Plan lighter</span></div>
+        </article>
+        <article className="home-swipe-card diary-card" aria-label="Write today journal">
+          <div className="card-lumi-panel"><Lumi state="sleepy" size="large" /><span>Journal</span></div>
+          <div className="diary-card-copy"><div className="diary-card-date"><strong>09</strong><span>September</span></div><span>Tonight, leave it here.</span><p>Mood first, then one note with Lumi.</p><Button className="primary-action diary-card-action" type="button" onClick={openJournalPage}>Record today <ArrowRight /></Button></div>
+        </article>
+        <article className="home-swipe-card tasks-card" aria-label="Today task list">
+          <div className="tasks-card-title"><span><ListChecks /></span><div><strong>Today tasks</strong><small>Point form focus</small></div></div>
+          <ul>{todayTaskPreview.map((task) => <li key={task.id} className={task.status === 'done' ? 'done' : ''}><button type="button" aria-label={`${task.status === 'done' ? 'Undo' : 'Mark'} ${task.title}`} onClick={() => togglePreviewTask(task.id)}>{task.status === 'done' && <Check />}</button><span>{task.title}</span></li>)}</ul>
+          <Button className="tasks-card-action" type="button" variant="ghost" onClick={() => onNavigate('tasks')}>Open tasks <ArrowRight /></Button>
+        </article>
+        <article className="home-swipe-card history-card" aria-label="Journal history">
+          <div className="history-card-art"><Lumi state="relieved" size="large" /></div>
+          <div className="history-card-copy">
+            <div className="history-card-top"><span><BookOpenText /></span><small>{historyCount || 'Demo'} saved</small></div>
+            <strong>Look back gently.</strong>
+            <p>Your past notes stay here, ready when you want to remember what helped.</p>
+            <Button className="history-card-action" type="button" onClick={() => setJournalHistoryOpen(true)}>View journal history <ArrowRight /></Button>
+          </div>
+        </article>
+      </section>
+      <Button type="button" variant="ghost" size="icon" className="carousel-arrow carousel-arrow-right" aria-label="Next card" onClick={() => moveCards('right')}><ArrowRight /></Button>
+      <div className="carousel-hint" aria-hidden="true"><span /><span /><span /><span /></div>
+    </div>
 
     <section className="editorial-section five-loads" aria-labelledby="five-loads-title">
       <div className="section-title"><div><h2 id="five-loads-title">What’s taking the most space today</h2></div></div>
@@ -143,19 +208,6 @@ function HomeView({ stored, onSave, onNavigate, composeSignal }: { stored: Store
         <span className={`load-mark ${row.tone}`} aria-hidden="true">{row.mark}</span><span>{row.label}</span>
         <div className="thin-track" role="progressbar" aria-label={`${row.label} load`} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${value}%` }} /></div><strong>{value}%</strong>
       </div>; })}</div>
-    </section>
-
-    <section className="editorial-section check-in" aria-labelledby="check-in-title">
-      <div className="section-title"><div><h2 id="check-in-title">Which Lumi feels like you today?</h2></div></div>
-      <div className="mood-row" role="group" aria-label="Choose how you feel">{moodOptions.map((option) => <button key={option.value} type="button" className={selectedMood === option.value ? 'selected' : ''} aria-pressed={selectedMood === option.value} onClick={() => chooseMood(option.value)}><Lumi state={option.value} size="small" /><span>{option.label}</span></button>)}</div>
-      <button className="journal-entry-link" type="button" onClick={openJournalPage}><span><strong>Want to leave something here?</strong><small>Write, speak, or keep a photo with today.</small></span><ChevronRight /></button>
-      {journalOpen && <div className="journal-composer">
-        <Textarea value={journalNote} onChange={(event) => setJournalNote(event.target.value)} placeholder="What made today feel this way?" aria-label="Journal note" />
-        {speechText && <blockquote>{speechText}</blockquote>}
-        {photoDataUrl && <div className="photo-preview"><img src={photoDataUrl} alt="Journal upload preview" /><button type="button" aria-label="Remove photo" onClick={() => setPhotoDataUrl('')}><X /></button></div>}
-        <div className="journal-tools"><Button type="button" variant="outline" size="sm" onClick={mockSpeech}><Mic /> Speak</Button><label className="photo-button"><Camera /> Photo<input type="file" accept="image/*" onChange={handlePhoto} /></label><Button type="button" size="sm" onClick={saveJournal}><Check /> Save</Button></div>
-        {mediaMessage && <p className="media-message" role="status">{mediaMessage}</p>}
-      </div>}
     </section>
 
     <section className="editorial-section week-section" aria-labelledby="week-title">
@@ -169,22 +221,47 @@ function HomeView({ stored, onSave, onNavigate, composeSignal }: { stored: Store
 
     {replayOpen && <InfoSheet title="A gentle replay" onClose={() => setReplayOpen(false)}><div className="replay-list"><article><Lumi state="calm" size="small" /><p><strong>Monday · Calm</strong><span>A quieter start with room between classes.</span></p></article><article><Lumi state="steady" size="small" /><p><strong>Tuesday · Okay</strong><span>You wrote: “A full day, but I still had room to pause.”</span></p></article><article><Lumi state="tired" size="small" /><p><strong>Wednesday · Tired</strong><span>Preparation for Thursday’s review made the day feel heavier.</span></p></article></div></InfoSheet>}
     {insightOpen && <InfoSheet title="Why Lumi noticed this" onClose={() => setInsightOpen(false)}><p className="sheet-body">Thursday combines a fixed assignment deadline, a prototype review, preparation work and errands. This is a workload pattern—not a diagnosis.</p></InfoSheet>}
-    {journalPageOpen && <section className="journal-page" role="dialog" aria-modal="true" aria-label="Write today journal">
+    {journalHistoryOpen && <section className="journal-history-page" role="dialog" aria-modal="true" aria-label="Journal history page">
+      <div className="journal-page-top">
+        <Button type="button" variant="ghost" size="icon" aria-label="Back" onClick={() => setJournalHistoryOpen(false)}><ArrowLeft /></Button>
+        <div><strong>Journal history</strong><span>{historyCount || 'Demo'} saved</span></div>
+        <Button type="button" variant="ghost" size="icon" aria-label="Write today note" onClick={openJournalPage}><SquarePen /></Button>
+      </div>
+      <div className="history-hero">
+        <div><p className="micro-label">LOOK BACK</p><h2>Find the moments you left with Lumi.</h2><span>{filteredJournalHistory.length} note{filteredJournalHistory.length === 1 ? '' : 's'} showing</span></div>
+        <Lumi state="relieved" size="small" />
+      </div>
+      <div className="history-search-box"><Search /><Input value={historySearch} onChange={(event) => setHistorySearch(event.target.value)} placeholder="Search title, mood, tag, note..." aria-label="Search journal history" /></div>
+      <div className="history-date-row" role="group" aria-label="Filter journal history by date">
+        <button type="button" className={historyDateFilter === 'all' ? 'selected' : ''} onClick={() => setHistoryDateFilter('all')}>All dates</button>
+        {historyDates.map((date) => { const dateParts = historyDateParts(date); return <button key={date} type="button" className={historyDateFilter === date ? 'selected' : ''} onClick={() => setHistoryDateFilter(date)}><strong>{dateParts.day}</strong><span>{dateParts.date}</span></button>; })}
+      </div>
+      <div className="history-filter-row" role="group" aria-label="Filter journal history">
+        <button type="button" className={historyMoodFilter === 'all' ? 'selected' : ''} onClick={() => setHistoryMoodFilter('all')}>All</button>
+        {moodOptions.map((option) => <button key={option.value} type="button" className={historyMoodFilter === option.value ? 'selected' : ''} onClick={() => setHistoryMoodFilter(option.value)}>{option.label}</button>)}
+        <button type="button" className={historyMoodFilter === 'custom' ? 'selected' : ''} onClick={() => setHistoryMoodFilter('custom')}>Custom</button>
+      </div>
+      <div className="journal-history-list full-page">{filteredJournalHistory.length ? filteredJournalHistory.map((entry) => { const dateParts = historyDateParts(entry.date); return <article key={entry.id}><div className="history-entry-date"><strong>{dateParts.day}</strong><span>{dateParts.date}</span></div><div className="history-entry-body"><div><strong>{entry.title || 'Untitled note'}</strong><span>{entry.moodLabel || entry.mood}</span></div>{entry.tags?.length ? <small>{entry.tags.join(' · ')}</small> : null}<p>{entry.note || entry.speechTranscript || 'A quiet check-in saved for this day.'}</p></div></article>; }) : <p className="empty-scenario-note">No journal matched. Try another word or filter.</p>}</div>
+    </section>}
+    {journalPageOpen && <section className={`journal-page ${journalStep === 'mood' ? 'journal-page-mood' : ''}`} role="dialog" aria-modal="true" aria-label="Write today journal">
       <div className="journal-page-top">
         <Button type="button" variant="ghost" size="icon" aria-label="Back" onClick={closeJournalPage}><X /></Button>
         <div><strong>{timelineLabels.today}</strong><span>{journalStep === 'mood' ? 'Choose mood' : 'Today journal'}</span></div>
         {journalStep === 'editor' ? <Button type="button" variant="ghost" size="icon" aria-label="Save journal" onClick={saveJournal}><Check /></Button> : <span aria-hidden="true" />}
       </div>
-      {journalStep === 'mood' ? <>
+      {journalStep === 'mood' ? <div className="journal-mood-card">
         <div className="journal-mood-hero">
           <div>
             <p className="micro-label">CHECK IN</p>
             <h2>What did today feel like?</h2>
+            <span>Choose one first. You can write after this.</span>
           </div>
-          <Lumi state={selectedMood} size="large" />
+          <Lumi state={pendingJournalMood ?? selectedMood} size="large" />
         </div>
-        <div className="journal-mood-grid" role="group" aria-label="Choose journal mood">{moodOptions.map((option) => <button key={option.value} type="button" className={selectedMood === option.value ? 'selected' : ''} aria-pressed={selectedMood === option.value} onClick={() => chooseJournalMood(option.value)}>{option.label}</button>)}</div>
-      </> : <div className="journal-editor-page">
+        <div className="journal-mood-grid" role="group" aria-label="Choose journal mood">{moodOptions.map((option) => <button key={option.value} type="button" className={!customMoodOpen && pendingJournalMood === option.value ? 'selected' : ''} aria-pressed={!customMoodOpen && pendingJournalMood === option.value} onClick={() => chooseJournalMood(option.value)}>{option.label}</button>)}<button type="button" className={customMoodOpen ? 'selected custom-mood-button' : 'custom-mood-button'} aria-pressed={customMoodOpen} onClick={chooseCustomMood}>Custom</button></div>
+        {customMoodOpen && <label className="custom-mood-field"><span>My own word for today</span><Input value={customJournalMood} onChange={(event) => setCustomJournalMood(event.target.value)} placeholder="e.g. hopeful, messy, numb..." maxLength={24} aria-label="Custom mood" /></label>}
+        <Button type="button" className="primary-action journal-next-action" disabled={!pendingJournalMood || (customMoodOpen && !customJournalMood.trim())} onClick={continueJournalMood}>Next <ArrowRight /></Button>
+      </div> : <div className="journal-editor-page">
         {photoDataUrl ? <div className="photo-preview journal-photo-preview"><img src={photoDataUrl} alt="Journal upload preview" /><button type="button" aria-label="Remove photo" onClick={() => setPhotoDataUrl('')}><X /></button></div> : <label className="journal-photo-upload"><Camera /><span>Add a photo</span><input type="file" accept="image/*" onChange={handlePhoto} /></label>}
         <Input className="journal-title-input" value={journalTitle} onChange={(event) => setJournalTitle(event.target.value)} placeholder="Title" aria-label="Journal title" />
         <div className="journal-tag-row" aria-label="Journal tags">{journalTagOptions.map((tag) => <button key={tag} type="button" className={journalTags.includes(tag) ? 'selected' : ''} onClick={() => toggleJournalTag(tag)}>{tag}</button>)}</div>
