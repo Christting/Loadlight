@@ -8,8 +8,6 @@ import {
   balanceMoves,
   proposedShiftLoad,
   relocatedLoad,
-  thursdayAfterWhatIf,
-  thursdayBeforeLoad,
 } from '@/lib/loadlight/load-logic';
 
 type BalanceTool = 'balance' | 'care' | 'community' | 'breathing' | 'more';
@@ -67,7 +65,7 @@ const boundaryMessages: Record<BoundaryTone, string> = {
   short: 'I am at capacity today. Can we move this to tomorrow?',
 };
 
-export function BalanceView() {
+export function BalanceView({ currentLoad }: { currentLoad: number }) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const balancePlanRef = useRef<HTMLElement | null>(null);
   const [taskDecisions, setTaskDecisions] = useState<Record<string, BalanceDecision>>(
@@ -114,7 +112,8 @@ export function BalanceView() {
     0,
   );
   const remainingPoints = relocatedLoad - relievedPoints;
-  const balancedLoad = thursdayAfterWhatIf - relievedPoints;
+  const projectedLoad = currentLoad + proposedShiftLoad;
+  const balancedLoad = projectedLoad - relievedPoints;
 
   function setTaskDecision(taskId: string, decision: BalanceDecision) {
     setTaskDecisions((current) => ({ ...current, [taskId]: decision }));
@@ -316,7 +315,7 @@ export function BalanceView() {
       <header className="page-header balance-work-title">
         <p className="date-label">{activeTool === 'care' ? 'CARE' : 'BALANCE'}</p>
         <h1>{activeBalanceMode === 'rebalance' ? 'Today is overloaded.' : activeBalanceMode === 'recover' ? 'Take care first.' : activeBalanceMode === 'reflect' ? 'Why am I stressed?' : 'Set a boundary.'}</h1>
-        <p>{activeBalanceMode === 'rebalance' ? `${thursdayAfterWhatIf}% load. Reduce ${relocatedLoad} points by moving, keeping, or dropping tasks.` : activeBalanceMode === 'recover' ? 'Pick a reset, find the pressure, or prepare a calmer reply.' : activeBalanceMode === 'reflect' ? 'Find the real reason first, then choose the right next step.' : 'Copy a kind reply when you need to protect your capacity.'}</p>
+        <p>{activeBalanceMode === 'rebalance' ? `${projectedLoad}% load. Reduce ${relocatedLoad} points by moving, keeping, or dropping tasks.` : activeBalanceMode === 'recover' ? 'Pick a reset, find the pressure, or prepare a calmer reply.' : activeBalanceMode === 'reflect' ? 'Find the real reason first, then choose the right next step.' : 'Copy a kind reply when you need to protect your capacity.'}</p>
       </header>
 
       {activeTool === 'care' && <section className="care-mode-tabs" aria-label="Care tools">
@@ -340,10 +339,10 @@ export function BalanceView() {
         <section className="balance-consequence" aria-labelledby="consequence-title">
           <span className="balance-step">2</span>
           <h2 id="consequence-title">Thursday becomes too full.</h2>
-          <div className="balance-loads" aria-label={`Thursday load changes from ${thursdayBeforeLoad} to ${thursdayAfterWhatIf} points`}>
-            <div><span>Before</span><strong>{thursdayBeforeLoad}</strong></div>
+          <div className="balance-loads" aria-label={`Load changes from ${currentLoad} to ${projectedLoad} percent`}>
+            <div><span>Before</span><strong>{currentLoad}</strong></div>
             <ArrowRight aria-hidden="true" />
-            <div className="what-if-total"><span>After</span><strong>{thursdayAfterWhatIf}</strong></div>
+            <div className="what-if-total"><span>After</span><strong>{projectedLoad}</strong></div>
           </div>
           <p className="balance-needed"><strong>{relocatedLoad} points</strong><span>need to be reduced before it feels manageable.</span></p>
         </section>
