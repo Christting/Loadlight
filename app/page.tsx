@@ -49,6 +49,39 @@ const topBarTitles: Record<AppView, string> = {
   me: 'Profile',
 };
 
+const demoSteps: Array<{ view: AppView; title: string; line: string; cue: string }> = [
+  {
+    view: 'home',
+    title: 'Start with the problem',
+    line: 'Mia is already at 78% load, and Thursday is getting heavy.',
+    cue: 'Say: LoadLight helps students notice overload before it becomes burnout.',
+  },
+  {
+    view: 'tasks',
+    title: 'Show where load comes from',
+    line: 'Tasks are not just a checklist. Each commitment explains what is taking mental, time, and physical space.',
+    cue: 'Say: The todo list feeds the load score, so Balance can suggest what to move, keep, or drop.',
+  },
+  {
+    view: 'what-if',
+    title: 'Test before saying yes',
+    line: 'Before accepting a new commitment, What-if predicts how much extra pressure it adds.',
+    cue: 'Tap What-if, then show 78% becoming a risky future load.',
+  },
+  {
+    view: 'balance',
+    title: 'Fix the overload',
+    line: 'Balance turns the warning into action: move, keep, or drop tasks until the day is lighter.',
+    cue: 'Tap AI auto plan, then confirm only when the plan feels right.',
+  },
+  {
+    view: 'balance',
+    title: 'Care for the person',
+    line: 'Care gives recovery, reflection, and boundary replies when the issue is emotional or social.',
+    cue: 'Tap Care, then Boundary to show Lumi writing a calmer reply.',
+  },
+];
+
 function Header({ label, title }: { label: string; title: string }) {
   return <header className="page-header"><p className="date-label">{label}</p><h1>{title}</h1></header>;
 }
@@ -353,6 +386,28 @@ function InfoSheet({ title, onClose, children }: { title: string; onClose: () =>
   return <div className="modal-layer" role="dialog" aria-modal="true" aria-label={title}><button className="modal-backdrop" type="button" onClick={onClose} aria-label="Close" /><section className="info-sheet"><div className="sheet-top"><div><span className="micro-label">TAKE A LOOK BACK</span><h2>{title}</h2></div><Button variant="ghost" size="icon" onClick={onClose} aria-label="Close"><X /></Button></div>{children}</section></div>;
 }
 
+function DemoGuide({ activeStep, onClose, onNext, onStart }: { activeStep: number; onClose: () => void; onNext: () => void; onStart: () => void }) {
+  const step = demoSteps[activeStep];
+  const isLastStep = activeStep === demoSteps.length - 1;
+
+  return <aside className="demo-guide" aria-label="Demo mode guide">
+    <div className="demo-guide-top">
+      <span>Demo mode</span>
+      <button type="button" aria-label="Close demo mode" onClick={onClose}><X /></button>
+    </div>
+    <div className="demo-progress" aria-hidden="true">
+      {demoSteps.map((item, index) => <i className={index <= activeStep ? 'active' : ''} key={item.title} />)}
+    </div>
+    <strong>{activeStep + 1}. {step.title}</strong>
+    <p>{step.line}</p>
+    <small>{step.cue}</small>
+    <div className="demo-guide-actions">
+      <Button type="button" variant="outline" onClick={onStart}>Restart</Button>
+      <Button type="button" className="primary-action" onClick={onNext}>{isLastStep ? 'Finish' : 'Next'} <ArrowRight /></Button>
+    </div>
+  </aside>;
+}
+
 export default function LoadLightApp() {
   const [view, setView] = useState<AppView>('home');
   const [stored, setStored] = useState<StoredLoadLightState>(defaultStoredState);
@@ -360,7 +415,17 @@ export default function LoadLightApp() {
   const [enteringDashboard, setEnteringDashboard] = useState(false);
   const [composeSignal, setComposeSignal] = useState(0);
   const [toast, setToast] = useState('');
+  const [demoOpen, setDemoOpen] = useState(false);
+  const [demoStep, setDemoStep] = useState(0);
   useEffect(() => { setStored(loadStoredState()); setHydrated(true); }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.search.includes('demo=1')) {
+      setDemoOpen(true);
+      setDemoStep(0);
+      setView('home');
+    }
+  }, []);
   useEffect(() => {
     if (!enteringDashboard) return;
     const timeout = window.setTimeout(() => setEnteringDashboard(false), 1400);
@@ -370,6 +435,18 @@ export default function LoadLightApp() {
   function login(email: string) { setView('home'); setEnteringDashboard(true); persist({ ...stored, isLoggedIn: true, email }, 'Welcome back, Mia.'); }
   function logout() { setEnteringDashboard(false); persist({ ...stored, isLoggedIn: false }, 'You’re safely logged out.'); setView('home'); }
   function composeToday() { setView('home'); setComposeSignal((signal) => signal + 1); }
+  function startDemo() { setDemoOpen(true); setDemoStep(0); setView(demoSteps[0].view); }
+  function nextDemoStep() {
+    if (demoStep >= demoSteps.length - 1) {
+      setDemoOpen(false);
+      setToast('Demo complete. Ready for questions.');
+      window.setTimeout(() => setToast(''), 2600);
+      return;
+    }
+    const nextStep = demoStep + 1;
+    setDemoStep(nextStep);
+    setView(demoSteps[nextStep].view);
+  }
   if (!hydrated) return <main className="loading-page"><span>✦</span><p>Making a little room…</p></main>;
   if (!stored.isLoggedIn) return <LoginView onLogin={login} />;
   if (enteringDashboard) return <DashboardLoadingView />;
@@ -378,6 +455,8 @@ export default function LoadLightApp() {
     {view === 'home' && <HomeView stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} />}{view === 'what-if' && <WhatIfView stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView />}{view === 'me' && <MeView onLogout={logout} />}
     <nav className="bottom-nav" aria-label="Primary navigation">{navItems.map(({ id, label, icon: Icon, featured }) => <Button key={id} variant="ghost" className={`${view === id ? 'active' : ''} ${featured ? 'featured' : ''}`} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}><Icon /><span>{label}</span></Button>)}</nav>
     <SupportChat />
+    {!demoOpen && <Button type="button" className="demo-mode-button" onClick={startDemo}><WandSparkles /> Demo</Button>}
+    {demoOpen && <DemoGuide activeStep={demoStep} onClose={() => setDemoOpen(false)} onNext={nextDemoStep} onStart={startDemo} />}
     {toast && <output className="toast" aria-live="polite"><Check /> {toast}</output>}
   </section><aside className="desktop-note" aria-hidden="true"><span>✦</span><p><strong>LoadLight</strong><small>Lighten your load.</small></p></aside></main>;
 }
