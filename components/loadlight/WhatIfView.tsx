@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ChevronLeft, LoaderCircle, Minus, Plus, RefreshCcw, Save, Search, Trash2, WandSparkles } from 'lucide-react';
+import { ArrowRight, ChevronLeft, LoaderCircle, Plus, RefreshCcw, Save, Search, Trash2, WandSparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Lumi } from '@/components/loadlight/Lumi';
@@ -10,6 +10,8 @@ import type { LoadDimension, StoredLoadLightState, WhatIfPlan } from '@/lib/load
 
 type ScenarioStep = 'overview' | 'define' | 'processing' | 'results';
 type ScenarioAdjustments = Record<LoadDimension, number>;
+type ScenarioAnswerKey = 'timeNeeded' | 'deadlinePressure' | 'peopleInvolved' | 'physicalEffort' | 'extraErrands' | 'flexibility';
+type ScenarioAnswers = Record<ScenarioAnswerKey, string>;
 
 const loadRows = [
   { key: 'mental', label: 'Mental', mark: 'M', tone: 'lavender' },
@@ -20,15 +22,86 @@ const loadRows = [
 ] as const;
 
 const baseWhatIfLoad = 78;
-const whatIfRangeLabel = '8-12 Sept';
-
 const defaultScenarioAdjustments: ScenarioAdjustments = {
   mental: 8,
-  time: 18,
-  physical: 2,
-  social: -5,
-  errands: 6,
+  time: 10,
+  physical: 0,
+  social: 6,
+  errands: 5,
 };
+
+const defaultScenarioAnswers: ScenarioAnswers = {
+  timeNeeded: 'medium',
+  deadlinePressure: 'medium',
+  peopleInvolved: 'small',
+  physicalEffort: 'none',
+  extraErrands: 'some',
+  flexibility: 'movable',
+};
+
+const scenarioQuestions: Array<{
+  key: ScenarioAnswerKey;
+  prompt: string;
+  options: Array<{ value: string; label: string; note: string }>;
+}> = [
+  {
+    key: 'timeNeeded',
+    prompt: 'How much time will it take?',
+    options: [
+      { value: 'light', label: '1-2h', note: 'small slot' },
+      { value: 'medium', label: '3-5h', note: 'half day' },
+      { value: 'heavy', label: '6h+', note: 'big block' },
+    ],
+  },
+  {
+    key: 'deadlinePressure',
+    prompt: 'How intense is the deadline?',
+    options: [
+      { value: 'low', label: 'Calm', note: 'no rush' },
+      { value: 'medium', label: 'Soon', note: 'some pressure' },
+      { value: 'high', label: 'Urgent', note: 'high pressure' },
+    ],
+  },
+  {
+    key: 'peopleInvolved',
+    prompt: 'Who is involved?',
+    options: [
+      { value: 'solo', label: 'Just me', note: 'solo work' },
+      { value: 'small', label: 'Small group', note: 'few people' },
+      { value: 'many', label: 'Many people', note: 'more coordination' },
+    ],
+  },
+  {
+    key: 'physicalEffort',
+    prompt: 'Will it drain physical energy?',
+    options: [
+      { value: 'none', label: 'No', note: 'mostly desk' },
+      { value: 'some', label: 'Some', note: 'light effort' },
+      { value: 'lot', label: 'A lot', note: 'tiring' },
+    ],
+  },
+  {
+    key: 'extraErrands',
+    prompt: 'Any extra admin or errands?',
+    options: [
+      { value: 'none', label: 'None', note: 'clean' },
+      { value: 'some', label: 'Some', note: 'a few tasks' },
+      { value: 'lot', label: 'A lot', note: 'many loose ends' },
+    ],
+  },
+  {
+    key: 'flexibility',
+    prompt: 'Can I move it if needed?',
+    options: [
+      { value: 'fixed', label: 'Fixed', note: 'hard to move' },
+      { value: 'movable', label: 'Maybe', note: 'some room' },
+      { value: 'flexible', label: 'Flexible', note: 'easy to move' },
+    ],
+  },
+];
+
+const defineStepCount = scenarioQuestions.length + 2;
+const reviewStepIndex = defineStepCount - 1;
 
 const scenarioTemplates: Array<{ title: string; note: string; adjustments: ScenarioAdjustments }> = [
   { title: 'Adding a new project', note: 'Fresh deadline, more focus time, less social space.', adjustments: { mental: 10, time: 18, physical: 2, social: -4, errands: 5 } },
@@ -43,6 +116,16 @@ const dimensionLabels: Record<LoadDimension, string> = {
   social: 'Social',
   errands: 'Errands',
 };
+
+function WhatIfHeader({ backLabel, label, onBack, title }: { backLabel?: string; label: string; onBack?: () => void; title?: string }) {
+  return <header className={`whatif-header ${onBack ? '' : 'solo'} ${title ? '' : 'compact'}`}>
+    <div className="whatif-header-row">
+      {onBack ? <button className="back-link" type="button" onClick={onBack}><ChevronLeft /> {backLabel}</button> : <span className="whatif-header-kicker">{label}</span>}
+      <span className="whatif-header-chip">{onBack ? label : 'Guided check'}</span>
+    </div>
+    {title && <h1>{title}</h1>}
+  </header>;
+}
 
 function clampLoad(value: number, max = 118) {
   return Math.max(0, Math.min(max, value));
@@ -101,6 +184,34 @@ function formatAdjustment(value: number) {
   return value > 0 ? `+${value}%` : `${value}%`;
 }
 
+function answerScore(value: string, scores: Record<string, number>) {
+  return scores[value] ?? 0;
+}
+
+function adjustmentsFromAnswers(answers: ScenarioAnswers): ScenarioAdjustments {
+  const timeLoad = answerScore(answers.timeNeeded, { light: 4, medium: 10, heavy: 18 });
+  const deadlineLoad = answerScore(answers.deadlinePressure, { low: 2, medium: 8, high: 15 });
+  const flexibilityLoad = answerScore(answers.flexibility, { fixed: 6, movable: 0, flexible: -4 });
+  return {
+    mental: deadlineLoad + Math.round(timeLoad * 0.2) + Math.max(0, flexibilityLoad),
+    time: timeLoad + flexibilityLoad,
+    physical: answerScore(answers.physicalEffort, { none: 0, some: 5, lot: 12 }),
+    social: answerScore(answers.peopleInvolved, { solo: 0, small: 6, many: 13 }),
+    errands: answerScore(answers.extraErrands, { none: 0, some: 5, lot: 11 }),
+  };
+}
+
+function answersFromAdjustments(sourceAdjustments: ScenarioAdjustments): ScenarioAnswers {
+  return {
+    timeNeeded: sourceAdjustments.time >= 15 ? 'heavy' : sourceAdjustments.time >= 7 ? 'medium' : 'light',
+    deadlinePressure: sourceAdjustments.mental >= 14 ? 'high' : sourceAdjustments.mental >= 7 ? 'medium' : 'low',
+    peopleInvolved: sourceAdjustments.social >= 10 ? 'many' : sourceAdjustments.social >= 4 ? 'small' : 'solo',
+    physicalEffort: sourceAdjustments.physical >= 9 ? 'lot' : sourceAdjustments.physical >= 3 ? 'some' : 'none',
+    extraErrands: sourceAdjustments.errands >= 9 ? 'lot' : sourceAdjustments.errands >= 3 ? 'some' : 'none',
+    flexibility: sourceAdjustments.time >= 15 ? 'fixed' : sourceAdjustments.time <= 5 ? 'flexible' : 'movable',
+  };
+}
+
 function buildScenarioSuggestions(load: number, dimension: string) {
   if (load > 100) return [
     `Remove at least ${Math.ceil(load - 96)}% from ${dimension.toLowerCase()} pressure.`,
@@ -139,15 +250,26 @@ function scenarioIdFromTitle(title: string) {
   return `what-if-${slug || 'scenario'}`;
 }
 
+function formatDateLabel(value: string) {
+  if (!value) return 'Not set';
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
   const viewRef = useRef<HTMLDivElement | null>(null);
   const [step, setStep] = useState<ScenarioStep>('overview');
   const [scenarioName, setScenarioName] = useState('New Major Project');
   const [adjustments, setAdjustments] = useState<ScenarioAdjustments>(defaultScenarioAdjustments);
+  const [scenarioAnswers, setScenarioAnswers] = useState<ScenarioAnswers>(defaultScenarioAnswers);
+  const [defineStep, setDefineStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [reviewedPlanId, setReviewedPlanId] = useState<string | null>(null);
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [scenarioSearch, setScenarioSearch] = useState('');
+  const [scenarioStartDate, setScenarioStartDate] = useState('2026-09-08');
+  const [scenarioEndDate, setScenarioEndDate] = useState('2026-09-12');
 
   const savedPlans = stored.whatIfPlans?.length ? stored.whatIfPlans : stored.whatIfPlan ? [stored.whatIfPlan] : [];
   const reviewedPlan = savedPlans.find((plan) => plan.id === reviewedPlanId);
@@ -161,10 +283,13 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   const recommendation = reviewedPlan?.recommendation ?? scenarioRecommendation(resultLoad, topDimension.label);
   const suggestions = buildScenarioSuggestions(resultLoad, topDimension.label);
   const latestPlan = savedPlans[0];
+  const currentQuestion = defineStep > 0 && defineStep <= scenarioQuestions.length ? scenarioQuestions[defineStep - 1] : null;
+  const isReviewStep = defineStep === reviewStepIndex;
   const forecastDays = scenarioForecast(activeAdjustments, resultLoad);
   const peakForecastDay = [...forecastDays].sort((a, b) => b.projected - a.projected)[0];
   const overviewForecast = scenarioForecast(latestPlan?.adjustments ?? defaultScenarioAdjustments, latestPlan?.projectedLoad);
   const overviewPeakDay = [...overviewForecast].sort((a, b) => b.projected - a.projected)[0];
+  const scenarioDateLabel = `${formatDateLabel(scenarioStartDate)} - ${formatDateLabel(scenarioEndDate)}`;
   const searchTerm = scenarioSearch.trim().toLowerCase();
   const filteredSavedPlans = searchTerm
     ? savedPlans.filter((plan) => {
@@ -190,7 +315,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
     return {
       id,
       title,
-      dateLabel: whatIfRangeLabel,
+      dateLabel: scenarioDateLabel,
       durationHours: 0,
       demand: projectedLoad >= 90 ? 'high' : 'medium',
       category: 'academic',
@@ -209,6 +334,10 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   function startCustomScenario() {
     setScenarioName('New Major Project');
     setAdjustments(defaultScenarioAdjustments);
+    setScenarioAnswers(defaultScenarioAnswers);
+    setScenarioStartDate('');
+    setScenarioEndDate('');
+    setDefineStep(0);
     setReviewedPlanId(null);
     setEditingPlanId(null);
     setStep('define');
@@ -220,9 +349,13 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
     setStep('overview');
   }
 
-  function updateAdjustment(key: LoadDimension, value: number) {
+  function updateScenarioAnswer(key: ScenarioAnswerKey, value: string) {
     setReviewedPlanId(null);
-    setAdjustments((current) => ({ ...current, [key]: Math.max(-15, Math.min(25, value)) }));
+    setScenarioAnswers((current) => {
+      const nextAnswers = { ...current, [key]: value };
+      setAdjustments(adjustmentsFromAnswers(nextAnswers));
+      return nextAnswers;
+    });
   }
 
   function openTemplate(template: { title: string; adjustments: ScenarioAdjustments }) {
@@ -244,11 +377,32 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   function editResult() {
     if (reviewedPlan) {
       setScenarioName(reviewedPlan.title);
-      setAdjustments(reviewedPlan.adjustments ?? defaultScenarioAdjustments);
+      const nextAdjustments = reviewedPlan.adjustments ?? defaultScenarioAdjustments;
+      setAdjustments(nextAdjustments);
+      setScenarioAnswers(answersFromAdjustments(nextAdjustments));
+      setScenarioStartDate('');
+      setScenarioEndDate('');
       setEditingPlanId(reviewedPlan.id);
     }
     setReviewedPlanId(null);
+    setDefineStep(reviewStepIndex);
     setStep('define');
+  }
+
+  function previousDefineStep() {
+    if (defineStep === 0) {
+      backToOverview();
+      return;
+    }
+    setDefineStep((current) => current - 1);
+  }
+
+  function nextDefineStep() {
+    if (isReviewStep) {
+      simulateScenario();
+      return;
+    }
+    setDefineStep((current) => Math.min(reviewStepIndex, current + 1));
   }
 
   function simulateScenario() {
@@ -291,46 +445,75 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   }
 
   if (step === 'define') return <div className="view-content what-if-view" ref={viewRef}>
-    <div className="scenario-pagebar">
-      <button className="back-link" type="button" onClick={backToOverview}><ChevronLeft /> Scenarios</button>
-      <span>{editingPlan ? 'Edit scenario' : 'New scenario'}</span>
-    </div>
+    <WhatIfHeader backLabel="Scenarios" label={editingPlan ? 'EDIT SCENARIO' : 'NEW SCENARIO'} onBack={backToOverview} />
     <section className="scenario-form" aria-labelledby="scenario-form-title">
       <div className="form-heading">
-        <div><h2 id="scenario-form-title">Scenario details</h2><p>Tune the five load areas, then preview the impact.</p></div>
+        <div><h2 id="scenario-form-title">Let’s test it first.</h2><p>Answer one thing at a time. Lumi will estimate the load.</p></div>
         <Lumi state="recovering" size="small" />
       </div>
-      <div className="plain-field"><label htmlFor="scenario-name">Scenario name</label><Input id="scenario-name" value={scenarioName} onChange={(event) => setScenarioName(event.target.value)} /></div>
-      <div className="date-range">
-        <span>Affected date range</span>
-        <strong>Starts: Monday, 8 Sept</strong>
-        <strong>Ends: Friday, 12 Sept</strong>
+      <div className="wizard-progress">
+        <span>Step {defineStep + 1} of {defineStepCount}</span>
+        <i aria-hidden="true"><b style={{ width: `${((defineStep + 1) / defineStepCount) * 100}%` }} /></i>
       </div>
-      <div className="draft-preview">
-        <span><small>Current</small><strong>{baseWhatIfLoad}%</strong></span>
-        <ArrowRight aria-hidden="true" />
-        <span><small>Draft</small><strong>{draftLoad}%</strong></span>
+      {defineStep === 0 && <div className="wizard-panel">
+        <span className="scenario-step-label"><span>1</span><strong>Name the change</strong></span>
+        <h3>What might I say yes to?</h3>
+        <p>Give this possible commitment a name and choose when it will happen.</p>
+        <div className="plain-field"><label htmlFor="scenario-name">Scenario name</label><Input id="scenario-name" value={scenarioName} onChange={(event) => setScenarioName(event.target.value)} /></div>
+        <div className="date-input-grid">
+          <div className="plain-field"><label htmlFor="scenario-start">Start date</label><Input id="scenario-start" type="date" value={scenarioStartDate} onChange={(event) => setScenarioStartDate(event.target.value)} /></div>
+          <div className="plain-field"><label htmlFor="scenario-end">End date</label><Input id="scenario-end" type="date" value={scenarioEndDate} onChange={(event) => setScenarioEndDate(event.target.value)} /></div>
+        </div>
+      </div>}
+      {currentQuestion && <fieldset className="wizard-panel scenario-choice-group">
+        <legend>{currentQuestion.prompt}</legend>
+        <span className="scenario-step-label"><span>{defineStep + 1}</span><strong>Answer one question</strong></span>
+        <p>Pick the closest answer. You can go back if it feels off.</p>
+        <div>
+          {currentQuestion.options.map((option) => {
+            const selected = scenarioAnswers[currentQuestion.key] === option.value;
+            return <button className={selected ? 'selected' : ''} type="button" key={option.value} onClick={() => updateScenarioAnswer(currentQuestion.key, option.value)} aria-pressed={selected}>
+              <strong>{option.label}</strong>
+              <small>{option.note}</small>
+            </button>;
+          })}
+        </div>
+      </fieldset>}
+      {isReviewStep && <div className="wizard-panel">
+        <span className="scenario-step-label"><span>{defineStepCount}</span><strong>Get my answer</strong></span>
+        <h3>Here’s Lumi’s estimate.</h3>
+        <p>If this still feels realistic, show the full impact before deciding.</p>
+        <div className="date-range">
+          <span>Affected date range</span>
+          <strong>Starts: {formatDateLabel(scenarioStartDate)}</strong>
+          <strong>Ends: {formatDateLabel(scenarioEndDate)}</strong>
+        </div>
+        <div className="draft-preview">
+          <span><small>Now</small><strong>{baseWhatIfLoad}%</strong></span>
+          <ArrowRight aria-hidden="true" />
+          <span><small>If I add it</small><strong>{draftLoad}%</strong></span>
+        </div>
+        <div className="auto-breakdown" aria-label="Estimated load changes">
+          <span>Lumi's estimate</span>
+          {loadRows.map((row) => <p key={row.key}>
+            <i className={`load-mark ${row.tone}`} aria-hidden="true">{row.mark}</i>
+            <small>{dimensionLabels[row.key]}</small>
+            <strong>{formatAdjustment(adjustments[row.key])}</strong>
+          </p>)}
+        </div>
+      </div>}
+      <div className="wizard-actions">
+        <Button type="button" variant="outline" onClick={previousDefineStep}>{defineStep === 0 ? 'Cancel' : 'Back'}</Button>
+        <Button type="button" className="simulate-button" onClick={nextDefineStep} disabled={defineStep === 0 && (!scenarioName.trim() || !scenarioStartDate || !scenarioEndDate)}>
+          {isReviewStep ? 'Show me the impact' : 'Next'} {isReviewStep && <WandSparkles />}
+        </Button>
       </div>
-      <div className="adjustment-list">
-        {loadRows.map((row) => {
-          const value = adjustments[row.key];
-          return <div className="adjustment-row" key={row.key}>
-            <span className={`load-mark ${row.tone}`} aria-hidden="true">{row.mark}</span>
-            <label htmlFor={`adjust-${row.key}`}>{dimensionLabels[row.key]}</label>
-            <strong>{formatAdjustment(value)}</strong>
-            <button type="button" aria-label={`Decrease ${dimensionLabels[row.key]}`} onClick={() => updateAdjustment(row.key, value - 1)}><Minus /></button>
-            <input id={`adjust-${row.key}`} type="range" min="-15" max="25" value={value} onChange={(event) => updateAdjustment(row.key, Number(event.target.value))} />
-            <button type="button" aria-label={`Increase ${dimensionLabels[row.key]}`} onClick={() => updateAdjustment(row.key, value + 1)}><Plus /></button>
-          </div>;
-        })}
-      </div>
-      <Button type="button" className="simulate-button" onClick={simulateScenario}>Simulate impact <WandSparkles /></Button>
     </section>
   </div>;
 
   if (step === 'processing') return <div className="view-content what-if-view processing-view" ref={viewRef}>
+    <WhatIfHeader label="PROCESSING" />
     <section className="processing-card" aria-label="Processing scenario data">
-      <span className="section-kicker">Processing</span>
       <Lumi state="recovering" size="large" />
       <LoaderCircle className="spin-icon" aria-hidden="true" />
       <h2>Calculating future impact...</h2>
@@ -340,36 +523,30 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   </div>;
 
   if (step === 'results') return <div className="view-content what-if-view" ref={viewRef}>
-    <div className="scenario-pagebar">
-      <button className="back-link" type="button" onClick={editResult}><ChevronLeft /> Edit</button>
-      <span>Scenario results</span>
-    </div>
-    <section className={`result-card ${resultStatus.tone}`} aria-labelledby="result-title">
-      <div className="result-heading">
-        <span>{reviewedPlan?.title || scenarioName || 'New scenario'}</span>
-        <h2 id="result-title">Projected load: {resultLoad}%</h2>
+    <WhatIfHeader backLabel="Edit" label="SCENARIO RESULTS" onBack={editResult} />
+    <section className={`whatif-simulator-card ${resultStatus.tone}`} aria-labelledby="result-title">
+      <div className="simulator-question">
+        <div>
+          <span className="panel-kicker">PRESSURE SIMULATOR</span>
+          <h2 id="result-title">What if I accept this?</h2>
+          <p>{reviewedPlan?.title || scenarioName || 'New scenario'}</p>
+        </div>
+        <Lumi state={resultStatus.state} size="small" />
       </div>
-      <div className="decision-strip">
-        <span>{resultDecision.label}</span>
-        <small>{resultDecision.note}</small>
+      <div className="simulator-rings">
+        <div className="load-ring steady" style={{ '--ring-value': `${baseWhatIfLoad}%` } as React.CSSProperties}><strong>{baseWhatIfLoad}%</strong><small>Current</small></div>
+        <ArrowRight aria-hidden="true" />
+        <div className={`load-ring ${resultStatus.tone}`} style={{ '--ring-value': `${Math.min(100, resultLoad)}%` } as React.CSSProperties}><strong>{resultLoad}%</strong><small>Future</small></div>
       </div>
-      <div className="lumi-comparison"><Lumi state="steady" size="small" /><ArrowRight aria-hidden="true" /><Lumi state={resultStatus.state} size="small" /></div>
-      <div className="impact-meter" aria-label={`Load changes from ${baseWhatIfLoad} percent to ${resultLoad} percent`}>
-        <span><small>Now</small><strong>{baseWhatIfLoad}%</strong></span>
-        <i aria-hidden="true" />
-        <span><small>After</small><strong>{resultLoad}%</strong></span>
+      <div className="simulator-breakdown" aria-label="Estimated pressure changes">
+        {loadRows.map((row) => <p key={row.key}>
+          <span><i className={`load-mark ${row.tone}`}>{row.mark}</i>{dimensionLabels[row.key]}</span>
+          <strong>{formatAdjustment(activeAdjustments[row.key])}</strong>
+        </p>)}
       </div>
-      <div className="summary-pair"><span><small>Current</small><strong>{reviewedPlan?.currentLoad ?? baseWhatIfLoad}%</strong></span><span><small>Simulated</small><strong>{resultLoad}%</strong></span></div>
-      <p>{recommendation}</p>
-    </section>
-    <section className="forecast-card" aria-labelledby="forecast-title">
-      <div className="section-title"><div><h2 id="forecast-title">Future load map</h2></div><small>Peak {peakForecastDay.dayLabel} · {peakForecastDay.projected}%</small></div>
-      <div className="forecast-bars">
-        {forecastDays.map((day) => <span className={day.tone} key={day.dayLabel}>
-          <small>{day.dayLabel}</small>
-          <i style={{ height: `${Math.min(100, Math.max(26, day.projected))}%` }} />
-          <strong>{day.projected}%</strong>
-        </span>)}
+      <div className="simulator-warning">
+        <strong>{resultDecision.label}</strong>
+        <p>{recommendation}</p>
       </div>
     </section>
     <section className="editorial-section" aria-labelledby="comparison-title">
@@ -396,44 +573,46 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
       {suggestions.map((suggestion, index) => <article key={suggestion}><span>{index + 1}</span><p>{suggestion}</p></article>)}
     </section>
     <section className="result-actions">
-      <Button type="button" className="primary-action" onClick={saveScenario}><Save /> {editingPlan ? 'Update scenario' : reviewedPlan ? 'Save as copy' : 'Save scenario'}</Button>
-      <Button type="button" variant="outline" onClick={editResult}><RefreshCcw /> Adjust</Button>
-      <Button type="button" variant="outline" onClick={backToOverview}>Back to list</Button>
+      <Button type="button" className="primary-action accept-choice" onClick={saveScenario}><Save /> Accept and save</Button>
+      <Button type="button" variant="outline" className="reject-choice" onClick={editResult}><RefreshCcw /> Reject or adjust</Button>
     </section>
   </div>;
 
   return <div className="view-content what-if-view" ref={viewRef}>
+    <WhatIfHeader label={timelineLabels.today} />
     <section className="whatif-dashboard-card" aria-labelledby="whatif-dashboard-title">
       <div className="whatif-card-title">
-        <span>What-if planner</span>
-        <small>{timelineLabels.today}</small>
+        <span>Before I say yes</span>
+        <small>{savedPlans.length} saved</small>
       </div>
-      <div className="mini-stats">
-        <span><small>Current</small><strong>{baseWhatIfLoad}%</strong></span>
-        <span><small>Saved</small><strong>{savedPlans.length}</strong></span>
-        <span><small>Latest</small><strong>{latestPlan ? `${latestPlan.projectedLoad}%` : 'None'}</strong></span>
+      <div className="decision-load-row">
+        <span><small>My load now</small><strong>{baseWhatIfLoad}%</strong></span>
+        <ArrowRight aria-hidden="true" />
+        <span><small>{latestPlan ? 'Last answer' : 'Next answer'}</small><strong>{latestPlan ? `${latestPlan.projectedLoad}%` : '?'}</strong></span>
       </div>
-      <div className="radar-strip">
+      <div className="whatif-next-action">
+        <Lumi state={latestPlan ? loadStatus(latestPlan.projectedLoad).state : 'steady'} size="large" />
+        <div>
+          <span className="section-kicker">First move</span>
+          <h2 id="whatif-dashboard-title">Test the commitment before I agree.</h2>
+          <Button type="button" className="primary-action" onClick={startCustomScenario}><Plus /> Try my own change</Button>
+        </div>
+      </div>
+      <div className="mini-forecast" aria-hidden="true">
+        {overviewForecast.map((day) => <span className={day.tone} key={day.dayLabel}><i style={{ height: `${Math.max(24, day.projected * 0.58)}%` }} /><small>{day.dayLabel}</small></span>)}
+      </div>
+      <div className="whatif-soft-summary" aria-label="Forecast summary">
         <span><small>Peak day</small><strong>{overviewPeakDay.dayLabel}</strong></span>
         <span><small>Forecast</small><strong>{overviewPeakDay.projected}%</strong></span>
       </div>
-      <div className="mini-forecast" aria-label="Quick future load preview">
-        {overviewForecast.map((day) => <span className={day.tone} key={day.dayLabel}><i style={{ height: `${Math.min(100, Math.max(22, day.projected))}%` }} /><small>{day.dayLabel}</small></span>)}
-      </div>
-      <Lumi state={latestPlan ? loadStatus(latestPlan.projectedLoad).state : 'steady'} size="large" />
-      <div>
-        <span className="section-kicker">Before you commit</span>
-        <h2 id="whatif-dashboard-title">Preview before you commit.</h2>
-      </div>
-      <Button type="button" className="primary-action" onClick={startCustomScenario}><Plus /> Create scenario</Button>
     </section>
     <section className="editorial-section saved-scenarios" aria-labelledby="saved-title">
-      <div className="section-title"><div><h2 id="saved-title">Scenario history</h2></div><small>{savedPlans.length} saved</small></div>
+      <div className="section-title"><div><h2 id="saved-title">Saved answers</h2></div><small>{savedPlans.length} saved</small></div>
       {savedPlans.length > 0 && <label className="scenario-search">
         <Search aria-hidden="true" />
         <Input value={scenarioSearch} onChange={(event) => setScenarioSearch(event.target.value)} placeholder="Search saved scenarios" aria-label="Search saved scenarios" />
       </label>}
-      {savedPlans.length === 0 && <p className="empty-scenario-note">No saved scenarios yet. Create one or try a quick scenario.</p>}
+      {savedPlans.length === 0 && <p className="empty-scenario-note">No saved answers yet. Try one change, then save the result.</p>}
       {savedPlans.length > 0 && filteredSavedPlans.length === 0 && <p className="empty-scenario-note">No matching scenarios. Try the name, pressure type, or load percent.</p>}
       {filteredSavedPlans.map((plan) => {
         const planStatus = loadStatus(plan.projectedLoad);
@@ -447,10 +626,10 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
           <button type="button" className="saved-scenario-delete" aria-label={`Delete ${plan.title}`} onClick={() => deleteScenario(plan.id)}><Trash2 /></button>
         </article>;
       })}
-      <button type="button" onClick={startCustomScenario}><Plus /><span>Custom scenario</span></button>
+      <button type="button" onClick={startCustomScenario}><Plus /><span>Start from blank</span></button>
     </section>
     <section className="editorial-section scenario-templates" aria-labelledby="template-title">
-      <div className="section-title"><div><h2 id="template-title">Try a quick scenario</h2></div></div>
+      <div className="section-title"><div><h2 id="template-title">Quick tries</h2></div></div>
       {scenarioTemplates.map((card) => <button type="button" key={card.title} onClick={() => openTemplate(card)}>
         <WandSparkles />
         <span><strong>{card.title}</strong><small>{card.note}</small></span>
