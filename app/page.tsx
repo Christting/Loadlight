@@ -12,6 +12,7 @@ import { SupportChat } from '@/components/loadlight/SupportChat';
 import { TasksView } from '@/components/loadlight/TasksView';
 import { WhatIfView } from '@/components/loadlight/WhatIfView';
 import { timelineLabels, todayFiveLoads, weekPlan } from '@/lib/loadlight/demo-data';
+import { activeTaskLoad } from '@/lib/loadlight/load-logic';
 import { defaultStoredState, loadStoredState, saveStoredState } from '@/lib/loadlight/storage';
 import type { AppView, CheckInMood, JournalEntry, StoredLoadLightState } from '@/lib/loadlight/types';
 
@@ -51,22 +52,22 @@ const topBarTitles: Record<AppView, string> = {
 
 const demoSteps: Array<{ view: AppView; title: string; line: string; cue: string }> = [
   {
-    view: 'home',
-    title: 'Start with the problem',
-    line: 'Mia is already at 78% load, and Thursday is getting heavy.',
-    cue: 'Say: LoadLight helps students notice overload before it becomes burnout.',
+    view: 'tasks',
+    title: 'Add tasks first',
+    line: 'Mia adds her commitments here, and LoadLight turns them into a load percentage automatically.',
+    cue: 'Say: The load score starts from real tasks, not a random mood number.',
   },
   {
-    view: 'tasks',
-    title: 'Show where load comes from',
-    line: 'Tasks are not just a checklist. Each commitment explains what is taking mental, time, and physical space.',
-    cue: 'Say: The todo list feeds the load score, so Balance can suggest what to move, keep, or drop.',
+    view: 'home',
+    title: 'See the load',
+    line: 'Now the dashboard shows how full today feels, so the student can notice risk early.',
+    cue: 'Say: LoadLight helps students notice overload before it becomes burnout.',
   },
   {
     view: 'what-if',
     title: 'Test before saying yes',
     line: 'Before accepting a new commitment, What-if predicts how much extra pressure it adds.',
-    cue: 'Tap What-if, then show 78% becoming a risky future load.',
+    cue: 'Tap What-if, then show the current load becoming a risky future load.',
   },
   {
     view: 'balance',
@@ -112,7 +113,7 @@ function DashboardLoadingView() {
   </section><aside className="desktop-note" aria-hidden="true"><span>✦</span><p><strong>LoadLight</strong><small>Lighten your load.</small></p></aside></main>;
 }
 
-function HomeView({ stored, onSave, onNavigate, composeSignal }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onNavigate: (view: AppView) => void; composeSignal: number }) {
+function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal }: { currentLoad: number; stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onNavigate: (view: AppView) => void; composeSignal: number }) {
   const [selectedMood, setSelectedMood] = useState<CheckInMood>(stored.selectedMood ?? 'steady');
   const [pendingJournalMood, setPendingJournalMood] = useState<CheckInMood | null>(null);
   const [customJournalMood, setCustomJournalMood] = useState('');
@@ -216,8 +217,8 @@ function HomeView({ stored, onSave, onNavigate, composeSignal }: { stored: Store
     <div className="home-carousel-wrap">
       <Button type="button" variant="ghost" size="icon" className="carousel-arrow carousel-arrow-left" aria-label="Previous card" onClick={() => moveCards('left')}><ArrowLeft /></Button>
       <section className="home-card-carousel" aria-label="Today cards" ref={cardCarouselRef}>
-        <article className="home-swipe-card load-card" aria-label="Tuesday current load is 78 percent">
-          <div className="hero-copy"><div className="home-card-meta"><strong>Current load</strong><span>Tue, 2 Sep</span></div><h2>Getting a little full.</h2><p className="hero-load"><strong>78%</strong><span>of today’s load</span></p><p>Thursday may need a little more room.</p></div>
+        <article className="home-swipe-card load-card" aria-label={`Current load is ${currentLoad} percent`}>
+          <div className="hero-copy"><div className="home-card-meta"><strong>Current load</strong><span>From tasks</span></div><h2>{currentLoad >= 100 ? 'Too full right now.' : currentLoad >= 85 ? 'Getting a little full.' : 'Still manageable.'}</h2><p className="hero-load"><strong>{currentLoad}%</strong><span>of today’s load</span></p><p>{currentLoad >= 85 ? 'Check before adding more.' : 'There is still some room.'}</p></div>
           <div className="card-lumi-panel"><Lumi state="tired" size="large" /><span>Plan lighter</span></div>
         </article>
         <article className="home-swipe-card diary-card" aria-label="Write today journal">
@@ -435,6 +436,7 @@ export default function LoadLightApp() {
   function login(email: string) { setView('home'); setEnteringDashboard(true); persist({ ...stored, isLoggedIn: true, email }, 'Welcome back, Mia.'); }
   function logout() { setEnteringDashboard(false); persist({ ...stored, isLoggedIn: false }, 'You’re safely logged out.'); setView('home'); }
   function composeToday() { setView('home'); setComposeSignal((signal) => signal + 1); }
+  const currentLoadPercent = Math.min(120, Math.round(activeTaskLoad(stored.tasks ?? [])));
   function startDemo() { setDemoOpen(true); setDemoStep(0); setView(demoSteps[0].view); }
   function nextDemoStep() {
     if (demoStep >= demoSteps.length - 1) {
@@ -452,7 +454,7 @@ export default function LoadLightApp() {
   if (enteringDashboard) return <DashboardLoadingView />;
   return <main className="app-shell"><section className={`phone-frame ${view === 'balance' ? '' : 'with-app-topbar'}`} aria-label="LoadLight student workload manager">
     {view !== 'balance' && <AppTopBar title={topBarTitles[view]} onCompose={composeToday} />}
-    {view === 'home' && <HomeView stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} />}{view === 'what-if' && <WhatIfView stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView />}{view === 'me' && <MeView onLogout={logout} />}
+    {view === 'home' && <HomeView currentLoad={currentLoadPercent} stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} />}{view === 'what-if' && <WhatIfView currentLoad={currentLoadPercent} stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView currentLoad={currentLoadPercent} />}{view === 'me' && <MeView onLogout={logout} />}
     <nav className="bottom-nav" aria-label="Primary navigation">{navItems.map(({ id, label, icon: Icon, featured }) => <Button key={id} variant="ghost" className={`${view === id ? 'active' : ''} ${featured ? 'featured' : ''}`} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}><Icon /><span>{label}</span></Button>)}</nav>
     <SupportChat />
     {!demoOpen && <Button type="button" className="demo-mode-button" onClick={startDemo}><WandSparkles /> Demo</Button>}
