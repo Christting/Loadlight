@@ -12,7 +12,7 @@ import {
   thursdayBeforeLoad,
 } from '@/lib/loadlight/load-logic';
 
-type BalanceTool = 'balance' | 'community' | 'breathing' | 'more';
+type BalanceTool = 'balance' | 'care' | 'community' | 'breathing' | 'more';
 type CalmGame = 'breath' | 'muyu' | 'bubble-pop';
 type CommunityTopic = 'for-you' | 'study' | 'tree-hole' | 'wins';
 type BalanceDecision = 'move' | 'keep' | 'drop';
@@ -304,28 +304,28 @@ export function BalanceView() {
         <button type="button" aria-label="Profile"><UserCircle /></button>
       </div>
       <div className="community-nav" aria-label="Community categories">
-        <button className={activeTool === 'balance' ? 'active' : ''} type="button" onClick={() => setActiveTool('balance')}>Balance</button>
+        <button className={activeTool === 'balance' && activeBalanceMode === 'rebalance' ? 'active' : ''} type="button" onClick={() => { setActiveTool('balance'); setActiveBalanceMode('rebalance'); }}>Balance</button>
+        <button className={activeTool === 'care' ? 'active' : ''} type="button" onClick={() => { setActiveTool('care'); setActiveBalanceMode('recover'); }}>Care</button>
         <button className={activeTool === 'community' ? 'active' : ''} type="button" onClick={() => setActiveTool('community')}>Community</button>
         <button className={activeTool === 'breathing' ? 'active' : ''} type="button" onClick={() => setActiveTool('breathing')}>Mini game</button>
         <button className={activeTool === 'more' ? 'active' : ''} type="button" onClick={() => setActiveTool('more')}>...</button>
       </div>
     </section>
 
-    {activeTool === 'balance' && <>
+    {(activeTool === 'balance' || activeTool === 'care') && <>
       <header className="page-header balance-work-title">
-        <p className="date-label">BALANCE</p>
-        <h1>{activeBalanceMode === 'rebalance' ? 'Fix the overload.' : activeBalanceMode === 'recover' ? 'Recover gently.' : activeBalanceMode === 'reflect' ? 'Why am I stressed?' : 'Set a boundary.'}</h1>
-        <p>{activeBalanceMode === 'rebalance' ? 'Decide what to move, keep, or drop before today gets too heavy.' : activeBalanceMode === 'recover' ? 'Pick one small reset that fits your current load.' : activeBalanceMode === 'reflect' ? 'Find the real reason first, then choose the right next step.' : 'Copy a kind reply when you need to protect your capacity.'}</p>
+        <p className="date-label">{activeTool === 'care' ? 'CARE' : 'BALANCE'}</p>
+        <h1>{activeBalanceMode === 'rebalance' ? 'Today is overloaded.' : activeBalanceMode === 'recover' ? 'Take care first.' : activeBalanceMode === 'reflect' ? 'Why am I stressed?' : 'Set a boundary.'}</h1>
+        <p>{activeBalanceMode === 'rebalance' ? `${thursdayAfterWhatIf}% load. Reduce ${relocatedLoad} points by moving, keeping, or dropping tasks.` : activeBalanceMode === 'recover' ? 'Pick a reset, find the pressure, or prepare a calmer reply.' : activeBalanceMode === 'reflect' ? 'Find the real reason first, then choose the right next step.' : 'Copy a kind reply when you need to protect your capacity.'}</p>
       </header>
 
-      <section className="balance-mode-grid" aria-label="Balance tools">
-        <button type="button" className={activeBalanceMode === 'rebalance' ? 'active' : ''} onClick={() => setActiveBalanceMode('rebalance')}><Scale /><strong>Rebalance</strong><span>Move, keep, or drop tasks.</span></button>
-        <button type="button" className={activeBalanceMode === 'recover' ? 'active' : ''} onClick={() => setActiveBalanceMode('recover')}><Moon /><strong>Recover</strong><span>Choose one small reset.</span></button>
-        <button type="button" className={activeBalanceMode === 'reflect' ? 'active' : ''} onClick={() => setActiveBalanceMode('reflect')}><Brain /><strong>Reflect</strong><span>Why am I stressed?</span></button>
-        <button type="button" className={activeBalanceMode === 'boundary' ? 'active' : ''} onClick={() => setActiveBalanceMode('boundary')}><ShieldCheck /><strong>Boundary</strong><span>Say no or ask to move it.</span></button>
-      </section>
+      {activeTool === 'care' && <section className="care-mode-tabs" aria-label="Care tools">
+        <button type="button" className={activeBalanceMode === 'recover' ? 'active' : ''} onClick={() => setActiveBalanceMode('recover')}><Moon />Recovery</button>
+        <button type="button" className={activeBalanceMode === 'reflect' ? 'active' : ''} onClick={() => setActiveBalanceMode('reflect')}><Brain />Reflect</button>
+        <button type="button" className={activeBalanceMode === 'boundary' ? 'active' : ''} onClick={() => setActiveBalanceMode('boundary')}><ShieldCheck />Boundary</button>
+      </section>}
 
-      {activeBalanceMode === 'rebalance' && <>
+      {activeTool === 'balance' && activeBalanceMode === 'rebalance' && <>
       <div className="balance-simple-flow" aria-label="Balance workflow">
         <section className="balance-commitment" aria-labelledby="commitment-title">
           <span className="balance-step">1</span>
@@ -345,7 +345,7 @@ export function BalanceView() {
             <ArrowRight aria-hidden="true" />
             <div className="what-if-total"><span>After</span><strong>{thursdayAfterWhatIf}</strong></div>
           </div>
-          <p className="balance-needed"><strong>{relocatedLoad} points</strong><span>need to move to another day.</span></p>
+          <p className="balance-needed"><strong>{relocatedLoad} points</strong><span>need to be reduced before it feels manageable.</span></p>
         </section>
 
         <section className="balance-options balance-plan-card" aria-labelledby="balance-options-title" ref={balancePlanRef}>
@@ -391,7 +391,7 @@ export function BalanceView() {
       </div>
       </>}
 
-      {activeBalanceMode === 'recover' && <section className="balance-intervention-card" aria-labelledby="recover-title">
+      {activeTool === 'care' && activeBalanceMode === 'recover' && <section className="balance-intervention-card" aria-labelledby="recover-title">
         <span className="intervention-icon"><Moon /></span>
         <div><p className="micro-label">RECOVER</p><h2 id="recover-title">Pick one reset now.</h2><p>Not a full self-care routine. Just one thing that makes the next hour lighter.</p></div>
         <div className="recovery-choice-row recovery-list">
@@ -407,7 +407,7 @@ export function BalanceView() {
         </div>}
       </section>}
 
-      {activeBalanceMode === 'reflect' && <section className="balance-intervention-card" aria-labelledby="reflect-title">
+      {activeTool === 'care' && activeBalanceMode === 'reflect' && <section className="balance-intervention-card" aria-labelledby="reflect-title">
         <span className="intervention-icon"><Brain /></span>
         <div><p className="micro-label">STRESS REASON</p><h2 id="reflect-title">What is causing the pressure?</h2><p>This helps Lumi suggest the right type of help: move a task, take a break, or set a boundary.</p></div>
         <div className="reflect-step-label"><span>1</span><strong>Pick what this feels like</strong></div>
@@ -430,7 +430,7 @@ export function BalanceView() {
         </div>}
       </section>}
 
-      {activeBalanceMode === 'boundary' && <section className="balance-intervention-card boundary-card" aria-labelledby="boundary-title">
+      {activeTool === 'care' && activeBalanceMode === 'boundary' && <section className="balance-intervention-card boundary-card" aria-labelledby="boundary-title">
         <span className="intervention-icon"><ShieldCheck /></span>
         <div><p className="micro-label">BOUNDARY</p><h2 id="boundary-title">Send a calmer reply.</h2><p>Use this when you want to be kind but still protect your capacity.</p></div>
         <label className="boundary-problem-box">
