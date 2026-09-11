@@ -1,6 +1,8 @@
 import { DEMO_DATES, profile, proposedCafeShift, thursdayTasks } from './demo-data';
 import type { BalanceMove, Demand, PlanItem, Task, TaskPriority } from './types';
 
+export const DEFAULT_WORKLOAD_WEEK_ANCHOR = DEMO_DATES.whatIfDay;
+
 export const demandWeights: Record<Demand, number> = {
   low: 0.7,
   medium: 1,
@@ -32,8 +34,49 @@ export function planItemLoadPoints(item: PlanItem): number {
 }
 
 // Load points still "carried" — done/skipped tasks stop counting toward capacity.
-export function activeTaskLoad(tasks: Task[]): number {
-  return dailyTaskLoad(tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped'));
+export function activeTaskLoad(tasks: Task[], activeDate?: string): number {
+  return dailyTaskLoad(tasks.filter((task) => {
+    if (task.status === 'done' || task.status === 'skipped') return false;
+    if (!activeDate) return true;
+    return !task.scheduledDate || task.scheduledDate === activeDate || task.autoScheduled;
+  }));
+}
+
+export function workloadWeekRange(activeDate: string) {
+  const base = activeDate ? new Date(`${activeDate}T00:00:00`) : new Date();
+  const jsDay = base.getDay();
+  const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
+  const start = new Date(base);
+  start.setDate(base.getDate() + mondayOffset);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+}
+
+function isInWeek(date: string, activeDate: string) {
+  if (!date) return true;
+  const { start, end } = workloadWeekRange(activeDate);
+  return date >= start && date <= end;
+}
+
+function taskBelongsToWeek(task: Task, anchorDate: string) {
+  const { start, end } = workloadWeekRange(anchorDate);
+  if (task.weekStart && task.weekEnd) return task.weekStart === start && task.weekEnd === end;
+  return isInWeek(task.scheduledDate || task.date || anchorDate, anchorDate);
+}
+
+function activeWeekAnchor(tasks: Task[], fallbackISO: string) {
+  const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped');
+  if (openTasks.some((task) => taskBelongsToWeek(task, fallbackISO))) return fallbackISO;
+  return openTasks[0]?.weekStart || openTasks[0]?.scheduledDate || openTasks[0]?.date || fallbackISO;
+}
+
+export function activeWeekTaskLoad(tasks: Task[], weekAnchor: string = DEFAULT_WORKLOAD_WEEK_ANCHOR): number {
+  const anchorDate = activeWeekAnchor(tasks, weekAnchor);
+  return dailyTaskLoad(tasks.filter((task) => {
+    if (task.status === 'done' || task.status === 'skipped') return false;
+    return taskBelongsToWeek(task, anchorDate);
+  }));
 }
 
 // --- Smart Priority ---------------------------------------------------
@@ -107,32 +150,32 @@ export const thursdayAfterWhatIf = thursdayBeforeLoad + proposedShiftLoad;
 export const balanceMoves: BalanceMove[] = [
   {
     taskId: 'assignment-research',
-    title: 'Move assignment research earlier',
+    title: 'Revise Operating Systems earlier',
     fromDate: DEMO_DATES.whatIfDay,
     fromDayLabel: 'Thursday',
-    toDate: '2025-09-03',
+    toDate: '2026-09-16',
     toDayLabel: 'Wednesday',
-    reason: 'Research is flexible; the submission deadline remains unchanged.',
+    reason: 'Revision is flexible; moving it earlier protects the busier part of the week.',
     relocatedPoints: taskLoadPoints(thursdayTasks.find((task) => task.id === 'assignment-research')!),
   },
   {
     taskId: 'team-call-prep',
-    title: 'Prepare for the team call on Wednesday',
+    title: 'Prepare club event notes earlier',
     fromDate: DEMO_DATES.whatIfDay,
     fromDayLabel: 'Thursday',
-    toDate: '2025-09-03',
+    toDate: '2026-09-16',
     toDayLabel: 'Wednesday',
-    reason: 'Preparation can happen earlier without moving the fixed review.',
+    reason: 'Preparation can happen earlier without moving the fixed club event.',
     relocatedPoints: taskLoadPoints(thursdayTasks.find((task) => task.id === 'team-call-prep')!),
   },
   {
     taskId: 'grocery-run',
-    title: 'Group groceries with Friday’s library visit',
+    title: 'Group laundry with Friday errands',
     fromDate: DEMO_DATES.whatIfDay,
     fromDayLabel: 'Thursday',
-    toDate: '2025-09-05',
+    toDate: '2026-09-18',
     toDayLabel: 'Friday',
-    reason: 'The errand has no fixed deadline and can be grouped with an existing trip.',
+    reason: 'The errand has no fixed deadline and can be grouped with a lighter day.',
     relocatedPoints: taskLoadPoints(thursdayTasks.find((task) => task.id === 'grocery-run')!),
   },
 ];

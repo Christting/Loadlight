@@ -12,7 +12,7 @@ import { SupportChat } from '@/components/loadlight/SupportChat';
 import { TasksView } from '@/components/loadlight/TasksView';
 import { WhatIfView } from '@/components/loadlight/WhatIfView';
 import { timelineLabels, todayFiveLoads, weekPlan } from '@/lib/loadlight/demo-data';
-import { activeTaskLoad } from '@/lib/loadlight/load-logic';
+import { activeWeekTaskLoad } from '@/lib/loadlight/load-logic';
 import { defaultStoredState, loadStoredState, saveStoredState } from '@/lib/loadlight/storage';
 import type { AppView, CheckInMood, JournalEntry, StoredLoadLightState } from '@/lib/loadlight/types';
 
@@ -87,11 +87,11 @@ function Header({ label, title }: { label: string; title: string }) {
   return <header className="page-header"><p className="date-label">{label}</p><h1>{title}</h1></header>;
 }
 
-function AppTopBar({ onCompose, title }: { onCompose: () => void; title: string }) {
+function AppTopBar({ onCompose, title, showCompose }: { onCompose: () => void; title: string; showCompose: boolean }) {
   return <header className="app-topbar" aria-label="LoadLight app header">
     <span className="topbar-spacer" aria-hidden="true" />
     <div className="topbar-title"><strong>{title}</strong></div>
-    <Button type="button" variant="ghost" size="icon" className="topbar-icon compose" aria-label="Write today note" onClick={onCompose}><SquarePen /></Button>
+    {showCompose ? <Button type="button" variant="ghost" size="icon" className="topbar-icon compose" aria-label="Write today note" onClick={onCompose}><SquarePen /></Button> : <span className="topbar-spacer" aria-hidden="true" />}
   </header>;
 }
 
@@ -113,7 +113,7 @@ function DashboardLoadingView() {
   </section><aside className="desktop-note" aria-hidden="true"><span>✦</span><p><strong>LoadLight</strong><small>Lighten your load.</small></p></aside></main>;
 }
 
-function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal }: { currentLoad: number; stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onNavigate: (view: AppView) => void; composeSignal: number }) {
+function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal, onConsumeCompose }: { currentLoad: number; stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onNavigate: (view: AppView) => void; composeSignal: number; onConsumeCompose: () => void }) {
   const [selectedMood, setSelectedMood] = useState<CheckInMood>(stored.selectedMood ?? 'steady');
   const [pendingJournalMood, setPendingJournalMood] = useState<CheckInMood | null>(null);
   const [customJournalMood, setCustomJournalMood] = useState('');
@@ -140,7 +140,8 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal }: { 
     setCustomMoodOpen(false);
     setJournalStep('mood');
     setJournalPageOpen(true);
-  }, [composeSignal]);
+    onConsumeCompose();
+  }, [composeSignal, onConsumeCompose]);
 
   function openJournalPage() { setPendingJournalMood(null); setCustomJournalMood(''); setCustomMoodOpen(false); setJournalStep('mood'); setJournalPageOpen(true); }
   function chooseJournalMood(mood: CheckInMood) { setPendingJournalMood(mood); setCustomJournalMood(''); setCustomMoodOpen(false); }
@@ -186,7 +187,7 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal }: { 
   const historyCount = stored.journalEntries.length;
   const fallbackJournalHistory: JournalEntry[] = [
     { id: 'demo-note-1', date: 'Monday, 1 September', moodLabel: 'Calm', title: 'A softer start', note: 'I had space between classes and it helped me breathe.' },
-    { id: 'demo-note-2', date: 'Wednesday, 3 September', moodLabel: 'Tired', title: 'A lot on my mind', note: 'Prototype review prep made the day feel heavier.' },
+    { id: 'demo-note-2', date: 'Wednesday, 16 September', moodLabel: 'Tired', title: 'A lot on my mind', note: 'Revision and group project work made the week feel heavier.' },
   ].map((entry) => ({ ...entry, mood: entry.moodLabel === 'Tired' ? 'tired' : 'calm' }));
   const journalHistory = stored.journalEntries.length ? stored.journalEntries : fallbackJournalHistory;
   function historyDateParts(date: string) {
@@ -261,8 +262,8 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal }: { 
     <section className="insight-strip"><Lumi state="thinking" size="small" /><div><p className="companion-label">Lumi noticed something</p><strong>Your busiest days seem to happen when study deadlines + work shifts overlap.</strong><button className="text-link" type="button" onClick={() => setInsightOpen(true)}>See what Lumi noticed <ArrowRight /></button></div></section>
     <section className="what-if-callout"><div><span className="section-kicker">Before you say yes...</span><h2>See what one more commitment would do to your week.</h2><button className="text-link what-if-link" type="button" onClick={() => onNavigate('what-if')}>Try it first <ArrowRight /></button></div><Lumi state="stressed" size="large" /></section>
 
-    {replayOpen && <InfoSheet title="A gentle replay" onClose={() => setReplayOpen(false)}><div className="replay-list"><article><Lumi state="calm" size="small" /><p><strong>Monday · Calm</strong><span>A quieter start with room between classes.</span></p></article><article><Lumi state="steady" size="small" /><p><strong>Tuesday · Okay</strong><span>You wrote: “A full day, but I still had room to pause.”</span></p></article><article><Lumi state="tired" size="small" /><p><strong>Wednesday · Tired</strong><span>Preparation for Thursday’s review made the day feel heavier.</span></p></article></div></InfoSheet>}
-    {insightOpen && <InfoSheet title="Why Lumi noticed this" onClose={() => setInsightOpen(false)}><p className="sheet-body">Thursday combines a fixed assignment deadline, a prototype review, preparation work and errands. This is a workload pattern—not a diagnosis.</p></InfoSheet>}
+    {replayOpen && <InfoSheet title="A gentle replay" onClose={() => setReplayOpen(false)}><div className="replay-list"><article><Lumi state="calm" size="small" /><p><strong>Monday · Calm</strong><span>A quieter start before the week gets busy.</span></p></article><article><Lumi state="steady" size="small" /><p><strong>Tuesday · Okay</strong><span>You wrote: “A full day, but I still had room to pause.”</span></p></article><article><Lumi state="tired" size="small" /><p><strong>Wednesday · Tired</strong><span>Revision and group project work made the day feel heavier.</span></p></article></div></InfoSheet>}
+    {insightOpen && <InfoSheet title="Why Lumi noticed this" onClose={() => setInsightOpen(false)}><p className="sheet-body">Thursday combines an assignment, a group project meeting, revision, club preparation and errands. This is a workload pattern—not a diagnosis.</p></InfoSheet>}
     {journalHistoryOpen && <section className="journal-history-page" role="dialog" aria-modal="true" aria-label="Journal history page">
       <div className="journal-page-top">
         <Button type="button" variant="ghost" size="icon" aria-label="Back" onClick={() => setJournalHistoryOpen(false)}><ArrowLeft /></Button>
@@ -320,7 +321,7 @@ function TeammatePlaceholder({ title }: { title: 'Tasks' | 'What-if' | 'Balance'
   return <div className="view-content placeholder-view"><div><p className="micro-label">TEAM SPACE</p><h1>{title}</h1><span>Coming from teammate</span></div></div>;
 }
 
-function MeView({ onLogout }: { onLogout: () => void }) {
+function MeView({ stored, onSave, onLogout }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onLogout: () => void }) {
   const [name, setName] = useState('Mia');
   const [email, setEmail] = useState('mia@student.edu');
   const [editingProfile, setEditingProfile] = useState(false);
@@ -328,7 +329,7 @@ function MeView({ onLogout }: { onLogout: () => void }) {
   const [gentleNudges, setGentleNudges] = useState(true);
   const [privateJournal, setPrivateJournal] = useState(true);
   const [calmMode, setCalmMode] = useState(false);
-  const [loadLimit, setLoadLimit] = useState(85);
+  const loadLimit = stored.loadLimit ?? 100;
   const [activeSheet, setActiveSheet] = useState<'account' | 'privacy' | 'support' | null>(null);
 
   return <div className="view-content me-view">
@@ -351,8 +352,8 @@ function MeView({ onLogout }: { onLogout: () => void }) {
     <section className="settings-card" aria-labelledby="load-preferences-title">
       <div className="settings-title"><span><Scale /></span><div><h2 id="load-preferences-title">Load preferences</h2><p>Tell Lumi when your week starts feeling too full.</p></div></div>
       <label className="load-limit-control">
-        <span>Comfort limit <strong>{loadLimit}%</strong></span>
-        <input type="range" min="60" max="100" value={loadLimit} onChange={(event) => setLoadLimit(Number(event.target.value))} />
+        <span>Overload limit <strong>{loadLimit}%</strong></span>
+        <input type="range" min="80" max="120" value={loadLimit} onChange={(event) => onSave({ ...stored, loadLimit: Number(event.target.value) }, 'Load preference saved.')} />
       </label>
       <button type="button" className={`setting-row ${calmMode ? 'enabled' : ''}`} onClick={() => setCalmMode((enabled) => !enabled)}>
         <span><Moon /> Calm mode</span>
@@ -436,7 +437,7 @@ export default function LoadLightApp() {
   function login(email: string) { setView('home'); setEnteringDashboard(true); persist({ ...stored, isLoggedIn: true, email }, 'Welcome back, Mia.'); }
   function logout() { setEnteringDashboard(false); persist({ ...stored, isLoggedIn: false }, 'You’re safely logged out.'); setView('home'); }
   function composeToday() { setView('home'); setComposeSignal((signal) => signal + 1); }
-  const currentLoadPercent = Math.min(120, Math.round(activeTaskLoad(stored.tasks ?? [])));
+  const currentLoadPercent = Math.min(120, Math.round(activeWeekTaskLoad(stored.tasks ?? [])));
   function startDemo() { setDemoOpen(true); setDemoStep(0); setView(demoSteps[0].view); }
   function nextDemoStep() {
     if (demoStep >= demoSteps.length - 1) {
@@ -453,11 +454,10 @@ export default function LoadLightApp() {
   if (!stored.isLoggedIn) return <LoginView onLogin={login} />;
   if (enteringDashboard) return <DashboardLoadingView />;
   return <main className="app-shell"><section className={`phone-frame ${view === 'balance' ? '' : 'with-app-topbar'}`} aria-label="LoadLight student workload manager">
-    {view !== 'balance' && <AppTopBar title={topBarTitles[view]} onCompose={composeToday} />}
-    {view === 'home' && <HomeView currentLoad={currentLoadPercent} stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} />}{view === 'what-if' && <WhatIfView currentLoad={currentLoadPercent} stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView currentLoad={currentLoadPercent} />}{view === 'me' && <MeView onLogout={logout} />}
+    {view !== 'balance' && <AppTopBar title={topBarTitles[view]} onCompose={composeToday} showCompose={view === 'home'} />}
+    {view === 'home' && <HomeView currentLoad={currentLoadPercent} stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} onConsumeCompose={() => setComposeSignal(0)} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} />}{view === 'what-if' && <WhatIfView currentLoad={currentLoadPercent} stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView stored={stored} onSave={persist} />}{view === 'me' && <MeView stored={stored} onSave={persist} onLogout={logout} />}
     <nav className="bottom-nav" aria-label="Primary navigation">{navItems.map(({ id, label, icon: Icon, featured }) => <Button key={id} variant="ghost" className={`${view === id ? 'active' : ''} ${featured ? 'featured' : ''}`} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}><Icon /><span>{label}</span></Button>)}</nav>
     <SupportChat />
-    {!demoOpen && <Button type="button" className="demo-mode-button" onClick={startDemo}><WandSparkles /> Demo</Button>}
     {demoOpen && <DemoGuide activeStep={demoStep} onClose={() => setDemoOpen(false)} onNext={nextDemoStep} onStart={startDemo} />}
     {toast && <output className="toast" aria-live="polite"><Check /> {toast}</output>}
   </section><aside className="desktop-note" aria-hidden="true"><span>✦</span><p><strong>LoadLight</strong><small>Lighten your load.</small></p></aside></main>;
