@@ -21,7 +21,6 @@ const loadRows = [
   { key: 'errands', label: 'Errands', mark: 'E', tone: 'sage' },
 ] as const;
 
-const baseWhatIfLoad = 78;
 const defaultScenarioAdjustments: ScenarioAdjustments = {
   mental: 8,
   time: 10,
@@ -152,9 +151,9 @@ function forecastTone(load: number) {
   return 'steady';
 }
 
-function scenarioForecast(adjustments: ScenarioAdjustments, projectedLoad = baseWhatIfLoad + scenarioImpact(adjustments)) {
+function scenarioForecast(baseLoad: number, adjustments: ScenarioAdjustments, projectedLoad = baseLoad + scenarioImpact(adjustments)) {
   const weights = [0.08, 0.2, 0.38, 1, 0.18];
-  const impact = Math.max(0, projectedLoad - baseWhatIfLoad);
+  const impact = Math.max(0, projectedLoad - baseLoad);
   return weekPlan.slice(0, 5).map((day, index) => {
     const projected = Math.round(clampLoad(index === 3 ? projectedLoad : day.load + impact * weights[index], 108));
     return { ...day, projected, tone: forecastTone(projected) };
@@ -257,7 +256,7 @@ function formatDateLabel(value: string) {
   return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
+export function WhatIfView({ currentLoad, stored, onSave }: { currentLoad: number; stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
   const viewRef = useRef<HTMLDivElement | null>(null);
   const [step, setStep] = useState<ScenarioStep>('overview');
   const [scenarioName, setScenarioName] = useState('New Major Project');
@@ -275,6 +274,7 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   const reviewedPlan = savedPlans.find((plan) => plan.id === reviewedPlanId);
   const editingPlan = savedPlans.find((plan) => plan.id === editingPlanId);
   const activeAdjustments = reviewedPlan?.adjustments ?? adjustments;
+  const baseWhatIfLoad = currentLoad;
   const draftLoad = clampLoad(baseWhatIfLoad + scenarioImpact(adjustments), 118);
   const resultLoad = reviewedPlan ? reviewedPlan.projectedLoad : draftLoad;
   const resultStatus = loadStatus(resultLoad);
@@ -285,9 +285,9 @@ export function WhatIfView({ stored, onSave }: { stored: StoredLoadLightState; o
   const latestPlan = savedPlans[0];
   const currentQuestion = defineStep > 0 && defineStep <= scenarioQuestions.length ? scenarioQuestions[defineStep - 1] : null;
   const isReviewStep = defineStep === reviewStepIndex;
-  const forecastDays = scenarioForecast(activeAdjustments, resultLoad);
+  const forecastDays = scenarioForecast(baseWhatIfLoad, activeAdjustments, resultLoad);
   const peakForecastDay = [...forecastDays].sort((a, b) => b.projected - a.projected)[0];
-  const overviewForecast = scenarioForecast(latestPlan?.adjustments ?? defaultScenarioAdjustments, latestPlan?.projectedLoad);
+  const overviewForecast = scenarioForecast(baseWhatIfLoad, latestPlan?.adjustments ?? defaultScenarioAdjustments, latestPlan?.projectedLoad);
   const overviewPeakDay = [...overviewForecast].sort((a, b) => b.projected - a.projected)[0];
   const scenarioDateLabel = `${formatDateLabel(scenarioStartDate)} - ${formatDateLabel(scenarioEndDate)}`;
   const searchTerm = scenarioSearch.trim().toLowerCase();

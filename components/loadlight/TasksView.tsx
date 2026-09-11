@@ -219,7 +219,25 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
   const [planEnd, setPlanEnd] = useState('');
 
   const load = useMemo(() => activeTaskLoad(tasks), [tasks]);
+  const loadPercent = Math.min(120, Math.round(load));
   const tone = loadStatusTone(load);
+  const draftHours = Number(hours);
+  const draftTaskLoad = title.trim() && draftHours > 0
+    ? taskLoadPoints({
+      id: 'draft-task',
+      title,
+      date,
+      timeLabel: 'Flexible',
+      durationHours: draftHours,
+      demand: demandFromHours(draftHours),
+      category,
+      customCategory,
+      flexibility,
+      loadMix: {},
+      status: 'not-started',
+    })
+    : 0;
+  const draftLoadPercent = Math.min(120, loadPercent + draftTaskLoad);
 
   const pendingTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped');
   const closedTasks = tasks.filter((task) => task.status === 'done' || task.status === 'skipped');
@@ -567,13 +585,13 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
         <h1>Tasks</h1>
       </header>
 
-      <section className="tasks-load-card" aria-label={`Current active load ${load} points`}>
+      <section className="tasks-load-card" aria-label={`Current active load ${loadPercent} percent`}>
         <Lumi state={tone === 'danger' ? 'overwhelmed' : tone === 'warning' ? 'tired' : 'steady'} size="small" />
         <div>
           <p className="micro-label">ACTIVE LOAD</p>
-          <strong className={`load-figure ${tone}`}>{load} pts</strong>
+          <strong className={`load-figure ${tone}`}>{loadPercent}%</strong>
           <p>
-            {pendingTasks.length} task{pendingTasks.length === 1 ? '' : 's'} remaining
+            {pendingTasks.length} task{pendingTasks.length === 1 ? '' : 's'} remaining · calculated from your tasks
           </p>
         </div>
       </section>
@@ -595,10 +613,6 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
             </div>
             <small>{pendingTasks.length} open</small>
           </div>
-
-          {pendingTasks.length === 0 && <p className="empty-scenario-note">Nothing carried right now. Add a task below.</p>}
-
-          <div className="task-list">{pendingTasks.map((task) => renderTaskRow(task, false))}</div>
 
           {!formOpen && (
             <Button type="button" className="primary-action add-task-button" onClick={() => setFormOpen(true)}>
@@ -664,6 +678,14 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
                 </label>
               </fieldset>
 
+              {draftTaskLoad > 0 && (
+                <div className={`task-load-preview ${loadStatusTone(draftLoadPercent)}`}>
+                  <span>Auto load estimate</span>
+                  <strong>{loadPercent}% → {draftLoadPercent}%</strong>
+                  <p>This task adds about {draftTaskLoad}% load based on time, effort, and flexibility.</p>
+                </div>
+              )}
+
               <div className="task-form-grid">
                 <fieldset className="task-form-fieldset">
                   <legend>Can this be rescheduled?</legend>
@@ -700,6 +722,10 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
               </div>
             </form>
           )}
+
+          {pendingTasks.length === 0 && <p className="empty-scenario-note">Nothing carried right now. Add a task above.</p>}
+
+          <div className="task-list">{pendingTasks.map((task) => renderTaskRow(task, false))}</div>
         </section>
       )}
 
