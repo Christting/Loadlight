@@ -12,7 +12,7 @@ import { SupportChat } from '@/components/loadlight/SupportChat';
 import { TasksView } from '@/components/loadlight/TasksView';
 import { WhatIfView } from '@/components/loadlight/WhatIfView';
 import { timelineLabels, todayFiveLoads, weekPlan } from '@/lib/loadlight/demo-data';
-import { activeWeekTaskLoad } from '@/lib/loadlight/load-logic';
+import { activeWeekTaskLoad, activeWeekTasks } from '@/lib/loadlight/load-logic';
 import { defaultStoredState, loadStoredState, saveStoredState } from '@/lib/loadlight/storage';
 import type { AppView, CheckInMood, JournalEntry, StoredLoadLightState } from '@/lib/loadlight/types';
 
@@ -183,7 +183,7 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal, onCo
     onSave({ ...stored, selectedMood, journalEntries: [entry, ...stored.journalEntries].slice(0, 12) }, 'Check-in and journal saved on this device.');
     setJournalTitle(''); setJournalNote(''); setSpeechText(''); setPhotoDataUrl(''); setPendingJournalMood(null); setCustomJournalMood(''); setCustomMoodOpen(false); setJournalStep('mood'); setJournalPageOpen(false);
   }
-  const todayTaskPreview = stored.tasks?.slice(0, 4) ?? [];
+  const todayTaskPreview = activeWeekTasks(stored.tasks ?? []).slice(0, 4);
   const historyCount = stored.journalEntries.length;
   const fallbackJournalHistory: JournalEntry[] = [
     { id: 'demo-note-1', date: 'Monday, 1 September', moodLabel: 'Calm', title: 'A softer start', note: 'I had space between classes and it helped me breathe.' },
@@ -219,15 +219,15 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal, onCo
       <Button type="button" variant="ghost" size="icon" className="carousel-arrow carousel-arrow-left" aria-label="Previous card" onClick={() => moveCards('left')}><ArrowLeft /></Button>
       <section className="home-card-carousel" aria-label="Today cards" ref={cardCarouselRef}>
         <article className="home-swipe-card load-card" aria-label={`Current load is ${currentLoad} percent`}>
-          <div className="hero-copy"><div className="home-card-meta"><strong>Current load</strong><span>From tasks</span></div><h2>{currentLoad >= 100 ? 'Too full right now.' : currentLoad >= 85 ? 'Getting a little full.' : 'Still manageable.'}</h2><p className="hero-load"><strong>{currentLoad}%</strong><span>of today’s load</span></p><p>{currentLoad >= 85 ? 'Check before adding more.' : 'There is still some room.'}</p></div>
+          <div className="hero-copy"><div className="home-card-meta"><strong>Current load</strong><span>From tasks</span></div><h2>{currentLoad >= 100 ? 'Too full right now.' : currentLoad >= 85 ? 'Getting a little full.' : 'Still manageable.'}</h2><p className="hero-load"><strong>{currentLoad}%</strong><span>of this week’s load</span></p><p>{currentLoad >= 85 ? 'Check before adding more.' : 'There is still some room.'}</p></div>
           <div className="card-lumi-panel"><Lumi state="tired" size="large" /><span>Plan lighter</span></div>
         </article>
         <article className="home-swipe-card diary-card" aria-label="Write today journal">
           <div className="card-lumi-panel"><Lumi state="sleepy" size="large" /><span>Journal</span></div>
           <div className="diary-card-copy"><div className="diary-card-date"><strong>09</strong><span>September</span></div><span>Tonight, leave it here.</span><p>Mood first, then one note with Lumi.</p><Button className="primary-action diary-card-action" type="button" onClick={openJournalPage}>Record today <ArrowRight /></Button></div>
         </article>
-        <article className="home-swipe-card tasks-card" aria-label="Today task list">
-          <div className="tasks-card-title"><span><ListChecks /></span><div><strong>Today tasks</strong><small>Point form focus</small></div></div>
+        <article className="home-swipe-card tasks-card" aria-label="This week task list">
+          <div className="tasks-card-title"><span><ListChecks /></span><div><strong>This week</strong><small>Point form focus</small></div></div>
           <ul>{todayTaskPreview.map((task) => <li key={task.id} className={task.status === 'done' ? 'done' : ''}><button type="button" aria-label={`${task.status === 'done' ? 'Undo' : 'Mark'} ${task.title}`} onClick={() => togglePreviewTask(task.id)}>{task.status === 'done' && <Check />}</button><span>{task.title}</span></li>)}</ul>
           <Button className="tasks-card-action" type="button" variant="ghost" onClick={() => onNavigate('tasks')}>Open tasks <ArrowRight /></Button>
         </article>

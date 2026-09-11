@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Lumi } from '@/components/loadlight/Lumi';
-import { activeWeekTaskLoad, DEFAULT_WORKLOAD_WEEK_ANCHOR, computeSmartPriority, taskLoadPoints, workloadWeekRange } from '@/lib/loadlight/load-logic';
+import { activeWeekTaskLoad, activeWeekTasks, addDaysISO, DEFAULT_WORKLOAD_WEEK_ANCHOR, computeSmartPriority, taskLoadPoints, workloadWeekRange } from '@/lib/loadlight/load-logic';
 import type {
   Demand,
   Flexibility,
@@ -194,15 +194,18 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
   function renderTaskRow(task: Task, closed: boolean) {
     const status = task.status ?? 'not-started';
     const StatusIcon = statusIcon(status);
+    const isDropped = status === 'skipped';
+    const ClosedIcon = isDropped ? X : CheckCircle2;
+    const closedLabel = isDropped ? 'Dropped' : statusLabels.done;
     const appliedPriority = computeSmartPriority(task, tasks);
 
     return (
       <article className={`task-row${closed ? ' closed' : ''}`} key={task.id}>
         <div className="task-row-header">
-          <strong className={closed ? 'done-text' : ''}>{task.title}</strong>
+          <strong className={closed ? (isDropped ? 'dropped-text' : 'done-text') : ''}>{task.title}</strong>
           {closed ? (
-            <span className="status-toggle-btn static done">
-              <CheckCircle2 /> {statusLabels.done}
+            <span className={`status-toggle-btn static ${isDropped ? 'skipped' : 'done'}`}>
+              <ClosedIcon /> {closedLabel}
             </span>
           ) : (
             <button type="button" className={`status-toggle-btn ${status}`} onClick={() => toggleProgress(task)}>
@@ -242,7 +245,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
           )}
           {closed && (
             <>
-              <span className="completed-label">Completed</span>
+              <span className={`completed-label${isDropped ? ' dropped' : ''}`}>{closedLabel}</span>
               <button type="button" className="text-action-btn" onClick={() => undoTask(task)}>
                 <Undo2 /> Undo
               </button>
@@ -253,8 +256,11 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     );
   }
 
-  const weeklyTasks = pendingTasks.filter((task) => task.weekStart === workloadWeek.start && task.weekEnd === workloadWeek.end);
+  const weeklyTasks = activeWeekTasks(pendingTasks, DEFAULT_WORKLOAD_WEEK_ANCHOR);
   const weeklyTaskPoints = weeklyTasks.reduce((total, task) => total + taskLoadPoints(task), 0);
+  const nextWeekAnchor = addDaysISO(DEFAULT_WORKLOAD_WEEK_ANCHOR, 7);
+  const nextWeekTasks = activeWeekTasks(pendingTasks, nextWeekAnchor);
+  const nextWeekTaskPoints = nextWeekTasks.reduce((total, task) => total + taskLoadPoints(task), 0);
 
   return (
     <div className="view-content tasks-view">
@@ -269,7 +275,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
           <p className="micro-label">ACTIVE LOAD</p>
           <strong className={`load-figure ${tone}`}>{loadPercent}%</strong>
           <p>
-            {pendingTasks.length} task{pendingTasks.length === 1 ? '' : 's'} remaining · calculated from your tasks
+            {weeklyTasks.length} task{weeklyTasks.length === 1 ? '' : 's'} this week · calculated from your tasks
           </p>
         </div>
       </section>
@@ -287,9 +293,9 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
         <section className="editorial-section" aria-labelledby="task-list-title">
           <div className="section-title">
             <div>
-              <h2 id="task-list-title">What&apos;s on your list</h2>
+              <h2 id="task-list-title">This week&apos;s list</h2>
             </div>
-            <small>{pendingTasks.length} open</small>
+            <small>{weeklyTasks.length} open</small>
           </div>
 
           {!formOpen && (
@@ -400,9 +406,9 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
             </form>
           )}
 
-          {pendingTasks.length === 0 && <p className="empty-scenario-note">Nothing carried right now. Add a task above.</p>}
+          {weeklyTasks.length === 0 && <p className="empty-scenario-note">Nothing carried this week. Add a task above, or check Weekly plan for next week.</p>}
 
-          <div className="task-list">{pendingTasks.map((task) => renderTaskRow(task, false))}</div>
+          <div className="task-list">{weeklyTasks.map((task) => renderTaskRow(task, false))}</div>
         </section>
       )}
 
@@ -435,6 +441,32 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
               );
             }) : <p className="empty-scenario-note">No active tasks in this week. Add a task from the To-Do List.</p>}
           </div>
+
+          {nextWeekTasks.length > 0 && (
+            <>
+              <div className="section-title next-week-title">
+                <div>
+                  <h3>Next week</h3>
+                  <p>Tasks moved out of this week appear here.</p>
+                </div>
+                <small>{nextWeekTaskPoints} pts</small>
+              </div>
+              <div className="weekly-task-plan">
+                {nextWeekTasks.map((task) => {
+                  const priority = computeSmartPriority(task, tasks);
+                  return (
+                    <article className="weekly-task-card moved" key={task.id}>
+                      <div>
+                        <strong>{task.title}</strong>
+                        <span>Moved to next week · {categoryLabel(task)} · {task.durationHours}h · {priorityLabels[priority]} priority</span>
+                      </div>
+                      <b>{taskLoadPoints(task)} pts</b>
+                    </article>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </section>
       )}
 
@@ -442,7 +474,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
         <section className="editorial-section" aria-labelledby="task-history-title">
           <div className="section-title">
             <div>
-              <h2 id="task-history-title">Completed</h2>
+              <h2 id="task-history-title">Task history</h2>
             </div>
             <small>{closedTasks.length}</small>
           </div>
