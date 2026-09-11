@@ -20,6 +20,12 @@ const fallbackReplies = [
   'You are not being dramatic. This is just a full moment. Put one hand down, unclench your jaw, and tell yourself: I only need to do the next small thing.',
 ];
 
+const fallbackBoundaryReplies = {
+  soft: 'I want to help, but my capacity is full today. Can we move this to tomorrow or make my part smaller?',
+  firm: 'I cannot take this on today. I need to protect the commitments I already have.',
+  short: 'I am at capacity today. Can we move this to tomorrow?',
+};
+
 const crisisPattern = /(suicide|kill myself|hurt myself|end my life|want to die|self harm)/i;
 
 function json(data: unknown, status = 200) {
@@ -49,7 +55,7 @@ function getApiKey() {
 }
 
 function getModel() {
-  return process.env.GEMINI_MODEL ?? 'gemini-3.8-flash';
+  return process.env.GEMINI_MODEL ?? 'gemini-3.5-flash';
 }
 
 function getEndpoint() {
@@ -82,7 +88,7 @@ export async function GET() {
         generationConfig: {
           maxOutputTokens: 8,
           thinkingConfig: {
-            thinkingLevel: 'low',
+            thinkingBudget: 0,
           },
         },
       }),
@@ -95,12 +101,67 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  let body: { messages?: unknown };
+  let body: { messages?: unknown; mode?: string; tone?: string; problem?: string };
 
   try {
     body = await request.json();
   } catch {
     return json({ reply: 'I could not read that message. Try sending it again in one short sentence.', source: 'fallback' }, 400);
+  }
+
+  if (body.mode === 'boundary') {
+    const apiKey = getApiKey();
+    const tone = body.tone === 'firm' || body.tone === 'short' ? body.tone : 'soft';
+    const problem = typeof body.problem === 'string' ? body.problem.trim().slice(0, 700) : '';
+
+    if (!problem) {
+      return json({ reply: 'Write what happened first, then I can help you phrase the boundary.', source: 'fallback' }, 400);
+    }
+
+    if (!apiKey) {
+      return json({ reply: fallbackBoundaryReplies[tone], source: 'fallback', reason: 'missing_gemini_key' });
+    }
+
+    try {
+      const response = await fetch(getEndpoint(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{
+              text: [
+                'You are Lumi inside LoadLight. Write one high-EQ boundary reply for a stressed student.',
+                'The reply should be warm, respectful, emotionally mature, and clear.',
+                'Do not sound like an AI, therapist, HR template, or corporate assistant.',
+                'Do not use markdown, bullets, headings, quotes, or explanations.',
+                'Return only the message the student can send.',
+                'Keep it under 55 words.',
+              ].join(' '),
+            }],
+          },
+          contents: [{ role: 'user', parts: [{ text: `Situation: ${problem}\nTone: ${tone}` }] }],
+          generationConfig: {
+            maxOutputTokens: 160,
+            thinkingConfig: {
+              thinkingBudget: 0,
+            },
+          },
+        }),
+      });
+      const data = (await response.json()) as GeminiResponse;
+      const reply = softenReply(data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? '').join('') ?? '');
+
+      if (!response.ok || !reply) {
+        return json({ reply: fallbackBoundaryReplies[tone], source: 'fallback', reason: data.error?.message ?? 'gemini_empty_response' });
+      }
+
+      return json({ reply, source: 'gemini' });
+    } catch {
+      return json({ reply: fallbackBoundaryReplies[tone], source: 'fallback', reason: 'gemini_request_failed' });
+    }
   }
 
   const messages = Array.isArray(body.messages)
@@ -157,9 +218,9 @@ export async function POST(request: Request) {
         },
         contents: geminiMessages,
         generationConfig: {
-          maxOutputTokens: 220,
+          maxOutputTokens: 320,
           thinkingConfig: {
-            thinkingLevel: 'low',
+            thinkingBudget: 0,
           },
         },
       }),
