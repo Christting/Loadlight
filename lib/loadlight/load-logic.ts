@@ -42,14 +42,24 @@ export function activeTaskLoad(tasks: Task[], activeDate?: string): number {
   }));
 }
 
+export function addDaysISO(date: string, days: number): string {
+  const [year, month, day] = date.split('-').map(Number);
+  const base = new Date(Date.UTC(year, month - 1, day));
+  base.setUTCDate(base.getUTCDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
 export function workloadWeekRange(activeDate: string) {
-  const base = activeDate ? new Date(`${activeDate}T00:00:00`) : new Date();
-  const jsDay = base.getDay();
+  const [year, month, day] = activeDate.split('-').map(Number);
+  const base = Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
+    ? new Date(Date.UTC(year, month - 1, day))
+    : new Date();
+  const jsDay = base.getUTCDay();
   const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
   const start = new Date(base);
-  start.setDate(base.getDate() + mondayOffset);
+  start.setUTCDate(base.getUTCDate() + mondayOffset);
   const end = new Date(start);
-  end.setDate(start.getDate() + 6);
+  end.setUTCDate(start.getUTCDate() + 6);
   return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
 }
 
@@ -59,24 +69,21 @@ function isInWeek(date: string, activeDate: string) {
   return date >= start && date <= end;
 }
 
-function taskBelongsToWeek(task: Task, anchorDate: string) {
+export function taskBelongsToWeek(task: Task, anchorDate: string) {
   const { start, end } = workloadWeekRange(anchorDate);
   if (task.weekStart && task.weekEnd) return task.weekStart === start && task.weekEnd === end;
   return isInWeek(task.scheduledDate || task.date || anchorDate, anchorDate);
 }
 
-function activeWeekAnchor(tasks: Task[], fallbackISO: string) {
-  const openTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped');
-  if (openTasks.some((task) => taskBelongsToWeek(task, fallbackISO))) return fallbackISO;
-  return openTasks[0]?.weekStart || openTasks[0]?.scheduledDate || openTasks[0]?.date || fallbackISO;
+export function activeWeekTasks(tasks: Task[], weekAnchor: string = DEFAULT_WORKLOAD_WEEK_ANCHOR): Task[] {
+  return tasks.filter((task) => {
+    if (task.status === 'done' || task.status === 'skipped') return false;
+    return taskBelongsToWeek(task, weekAnchor);
+  });
 }
 
 export function activeWeekTaskLoad(tasks: Task[], weekAnchor: string = DEFAULT_WORKLOAD_WEEK_ANCHOR): number {
-  const anchorDate = activeWeekAnchor(tasks, weekAnchor);
-  return dailyTaskLoad(tasks.filter((task) => {
-    if (task.status === 'done' || task.status === 'skipped') return false;
-    return taskBelongsToWeek(task, anchorDate);
-  }));
+  return dailyTaskLoad(activeWeekTasks(tasks, weekAnchor));
 }
 
 // --- Smart Priority ---------------------------------------------------

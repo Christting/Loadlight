@@ -4,12 +4,14 @@ import { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, Brain, Check, Coffee, Copy, Moon, PenLine, Scale, Search, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  activeWeekTasks,
   activeWeekTaskLoad,
+  addDaysISO,
   DEFAULT_WORKLOAD_WEEK_ANCHOR,
   taskLoadPoints,
   workloadWeekRange,
 } from '@/lib/loadlight/load-logic';
-import type { BalanceMove, StoredLoadLightState } from '@/lib/loadlight/types';
+import type { BalanceMove, StoredLoadLightState, Task } from '@/lib/loadlight/types';
 
 type BalanceTool = 'balance' | 'care' | 'community' | 'breathing' | 'more';
 type CalmGame = 'breath' | 'muyu' | 'bubble-pop';
@@ -64,59 +66,22 @@ const boundaryMessages: Record<BoundaryTone, string> = {
 };
 
 function nextWeekISO(date: string) {
-  const base = date ? new Date(`${date}T00:00:00`) : new Date();
-  if (Number.isNaN(base.getTime())) return date;
-  base.setDate(base.getDate() + 7);
-  return base.toISOString().slice(0, 10);
+  return date ? addDaysISO(date, 7) : date;
 }
 
 function dayLabel(date: string, fallback: string) {
-  const parsed = date ? new Date(`${date}T00:00:00`) : null;
+  const parsed = date ? new Date(`${date}T00:00:00Z`) : null;
   if (!parsed || Number.isNaN(parsed.getTime())) return fallback;
-  return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parsed);
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' }).format(parsed);
 }
 
 function nextWeekDayLabel(date: string) {
   return `Next ${dayLabel(date, 'week')}`;
 }
 
-function weekBounds(activeDate: string) {
-  const base = activeDate ? new Date(`${activeDate}T00:00:00`) : new Date();
-  const jsDay = base.getDay();
-  const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
-  const start = new Date(base);
-  start.setDate(base.getDate() + mondayOffset);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
-}
-
-function isInWeek(date: string, activeDate: string) {
-  if (!date) return true;
-  const { start, end } = weekBounds(activeDate);
-  return date >= start && date <= end;
-}
-
-function taskBelongsToWeek(task: { weekStart?: string; weekEnd?: string; scheduledDate?: string; date?: string }, activeDate: string) {
-  const { start, end } = weekBounds(activeDate);
-  if (task.weekStart && task.weekEnd) return task.weekStart === start && task.weekEnd === end;
-  return isInWeek(task.scheduledDate || task.date || activeDate, activeDate);
-}
-
-function balanceAnchorDate(stored: StoredLoadLightState, fallbackISO: string) {
-  const tasks = (stored.tasks ?? []).filter((task) => task.status !== 'done' && task.status !== 'skipped');
-  if (tasks.some((task) => taskBelongsToWeek(task, fallbackISO))) return fallbackISO;
-  return tasks[0]?.weekStart || tasks[0]?.scheduledDate || tasks[0]?.date || fallbackISO;
-}
-
-function buildBalanceMoves(stored: StoredLoadLightState, activeDate: string, scope: BalanceScope): BalanceMove[] {
-  return (stored.tasks ?? [])
-    .filter((task) => {
-      if (task.status === 'done' || task.status === 'skipped') return false;
-      return taskBelongsToWeek(task, activeDate);
-    })
+function buildBalanceMoves(tasks: Task[], activeDate: string, scope: BalanceScope): BalanceMove[] {
+  return activeWeekTasks(tasks, activeDate)
     .sort((a, b) => taskLoadPoints(b) - taskLoadPoints(a))
-    .slice(0, 4)
     .map((task) => {
       const fromDate = task.scheduledDate || task.date || task.weekStart || activeDate;
       const toDate = task.flexibility === 'flexible' ? nextWeekISO(fromDate) : fromDate;
@@ -160,7 +125,7 @@ function balanceLoadCopy(load: number, loadLimit: number, scope: BalanceScope) {
 export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const balancePlanRef = useRef<HTMLElement | null>(null);
-  const anchorDate = useMemo(() => balanceAnchorDate(stored, DEFAULT_WORKLOAD_WEEK_ANCHOR), [stored]);
+  const anchorDate = DEFAULT_WORKLOAD_WEEK_ANCHOR;
   const balanceScope: BalanceScope = 'week';
   const [balanceStarted, setBalanceStarted] = useState(false);
   const weekLoad = useMemo(() => {
@@ -168,7 +133,7 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
   }, [stored.tasks, anchorDate]);
   const displayedLoad = weekLoad;
   const loadLimit = stored.loadLimit ?? 100;
-  const balanceMoves = useMemo(() => buildBalanceMoves(stored, anchorDate, balanceScope), [stored, anchorDate, balanceScope]);
+  const balanceMoves = useMemo(() => buildBalanceMoves(stored.tasks ?? [], anchorDate, balanceScope), [stored.tasks, anchorDate, balanceScope]);
   const relocatedLoad = balanceMoves.reduce((total, move) => total + move.relocatedPoints, 0);
   const autoPlan = useMemo(() => {
     let remaining = Math.max(0, displayedLoad - loadLimit);
@@ -233,9 +198,10 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
   const remainingPoints = Math.max(0, targetReduction - relievedPoints);
   const projectedLoad = displayedLoad;
   const balancedLoad = projectedLoad - relievedPoints;
+  const progressTarget = targetReduction || relocatedLoad;
   const loadCopy = balanceLoadCopy(displayedLoad, loadLimit, balanceScope);
   const needsBalance = displayedLoad > loadLimit;
-  const showBalanceSteps = needsBalance || balanceStarted;
+  const showBalanceSteps = balanceMoves.length > 0;
   const mostStressfulTask = balanceMoves[0];
 
   function setTaskDecision(taskId: string, decision: BalanceDecision) {
@@ -315,14 +281,9 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
     setBoundaryGenerating(false);
   }
 
-  function confirmAutoPlan() {
-    setTaskDecisions(autoPlan);
-    setShowAutoPlan(false);
-  }
-
-  function saveBalanceChoice() {
+  function saveBalanceChoice(decisions: Record<string, BalanceDecision> = taskDecisions) {
     const nextTasks = (stored.tasks ?? []).map((task) => {
-      const decision = taskDecisions[task.id];
+      const decision = decisions[task.id];
       if (decision === 'drop') return { ...task, status: 'skipped' as const };
       if (decision === 'move') {
         const currentDate = task.scheduledDate || task.date || anchorDate;
@@ -339,6 +300,12 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
       return task;
     });
     onSave({ ...stored, tasks: nextTasks }, 'Balance choices saved.');
+  }
+
+  function confirmAutoPlan() {
+    setTaskDecisions(autoPlan);
+    setShowAutoPlan(false);
+    saveBalanceChoice(autoPlan);
   }
 
   function adjustAutoPlan() {
@@ -545,7 +512,10 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
             <ArrowRight aria-hidden="true" />
             <div className="what-if-total"><span>After choices</span><strong>{balancedLoad}</strong></div>
           </div>
-          <p className="balance-needed"><strong>{targetReduction || relocatedLoad} points</strong><span>{targetReduction ? loadCopy.help : 'can be moved or dropped if you want a lighter week.'}</span></p>
+          <p className="balance-needed">
+            <strong>{targetReduction} points</strong>
+            <span>{targetReduction ? loadCopy.help : 'need to be reduced. You can still balance anyway for more breathing room.'}</span>
+          </p>
         </section>
 
         <section className="balance-options balance-plan-card" aria-labelledby="balance-options-title" ref={balancePlanRef}>
@@ -555,10 +525,10 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
               <h2 id="balance-options-title">Decide task by task.</h2>
               <p className="balance-intro">Lumi suggests a calmer option, but you choose what happens.</p>
             </div>
-            <span>{relievedPoints}/{targetReduction || relocatedLoad}</span>
+            <span>{targetReduction ? `${relievedPoints}/${targetReduction}` : 'optional'}</span>
           </div>
           <Button type="button" variant="outline" className="auto-plan-button" onClick={() => setShowAutoPlan(true)}><Sparkles /> AI auto plan</Button>
-          <div className="rescue-progress"><i style={{ width: `${Math.min(100, relocatedLoad ? (relievedPoints / (targetReduction || relocatedLoad)) * 100 : 0)}%` }} /></div>
+          <div className="rescue-progress"><i style={{ width: `${Math.min(100, progressTarget ? (relievedPoints / progressTarget) * 100 : 0)}%` }} /></div>
           <p className="balance-intro">You do not need to fix everything. Keeping something is allowed; Lumi will just show the trade-off.</p>
           <div className="rescue-task-list">
             {balanceMoves.length ? balanceMoves.map((move) => {
@@ -586,7 +556,7 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
             <strong>Week becomes {balancedLoad}%</strong>
             <p>{remainingPoints > 0 ? `Still ${remainingPoints} points over. You can keep it if that is the honest choice.` : 'Back in balance. Nothing is forced.'}</p>
           </div>
-          <Button className="primary-action" onClick={saveBalanceChoice} disabled={!balanceMoves.length}><Scale /> Save my choice</Button>
+          <Button className="primary-action" onClick={() => saveBalanceChoice()} disabled={!balanceMoves.length}><Scale /> Save my choice</Button>
         </section>
         </>}
       </div>
@@ -620,7 +590,7 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
           <div className="reflection-question-card">
             <p>Lumi asks</p>
             <strong>{reflectionReasons[reflectReason].prompt}</strong>
-            <textarea value={reflectionAnswer} onChange={(event) => setReflectionAnswer(event.target.value)} placeholder="Type your answer here..." />
+            <textarea aria-label="Reflection answer" value={reflectionAnswer} onChange={(event) => setReflectionAnswer(event.target.value)} placeholder="Type your answer here..." />
           </div>
           <Button type="button" className="primary-action" disabled={!reflectionAnswer.trim()} onClick={saveReflection}><Check /> Get suggestion</Button>
         </>}
@@ -636,7 +606,7 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
         <div><p className="micro-label">BOUNDARY</p><h2 id="boundary-title">Send a calmer reply.</h2><p>Use this when you want to be kind but still protect your capacity.</p></div>
         <label className="boundary-problem-box">
           <span>What happened?</span>
-          <textarea value={boundaryProblem} onChange={(event) => setBoundaryProblem(event.target.value)} placeholder="e.g. My teammate asked me to join another meeting tonight..." />
+          <textarea aria-label="What happened?" value={boundaryProblem} onChange={(event) => setBoundaryProblem(event.target.value)} placeholder="e.g. My teammate asked me to join another meeting tonight..." />
         </label>
         <div className={`boundary-tone-row ${boundaryGenerated ? 'has-replies' : ''}`} role="group" aria-label="Boundary reply tone">
           <button className={boundaryTone === 'soft' ? 'active' : ''} type="button" onClick={() => chooseBoundaryTone('soft')}>Soft</button>
