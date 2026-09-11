@@ -1,8 +1,8 @@
 import type { DayPlan, FiveLoads, StudentProfile, Task } from './types';
 
 export const DEMO_DATES = {
-  today: '2025-09-02',
-  whatIfDay: '2025-09-04',
+  today: '2026-09-14',
+  whatIfDay: '2026-09-17',
 } as const;
 
 export const profile: StudentProfile = {
@@ -20,26 +20,26 @@ export const todayFiveLoads: FiveLoads = {
 };
 
 export const weekPlan: DayPlan[] = [
-  { date: '2025-09-01', dayLabel: 'Mon', load: 61, mood: 'calm' },
-  { date: DEMO_DATES.today, dayLabel: 'Tue', load: 78, mood: 'steady' },
-  { date: '2025-09-03', dayLabel: 'Wed', load: 81, mood: 'tired' },
+  { date: DEMO_DATES.today, dayLabel: 'Mon', load: 61, mood: 'calm' },
+  { date: '2026-09-15', dayLabel: 'Tue', load: 78, mood: 'steady' },
+  { date: '2026-09-16', dayLabel: 'Wed', load: 81, mood: 'tired' },
   { date: DEMO_DATES.whatIfDay, dayLabel: 'Thu', load: 83, mood: 'stressed' },
-  { date: '2025-09-05', dayLabel: 'Fri', load: 60 },
-  { date: '2025-09-06', dayLabel: 'Sat', load: 54 },
-  { date: '2025-09-07', dayLabel: 'Sun', load: 38 },
+  { date: '2026-09-18', dayLabel: 'Fri', load: 60 },
+  { date: '2026-09-19', dayLabel: 'Sat', load: 54 },
+  { date: '2026-09-20', dayLabel: 'Sun', load: 38 },
 ];
 
 // The fixed date labels shown in the prototype follow the approved demo story,
 // rather than the viewer's current system clock.
 export const timelineLabels = {
-  today: 'Tuesday, 2 September',
-  whatIfDay: 'Thursday, 4 September',
+  today: 'Monday, 14 September',
+  whatIfDay: 'Thursday, 17 September',
 };
 
 export const thursdayTasks: Task[] = [
   {
     id: 'ds-final-writing',
-    title: 'Data Structures final writing',
+    title: 'Data Structures assignment',
     date: DEMO_DATES.whatIfDay,
     timeLabel: '9:00 AM',
     durationHours: 5,
@@ -50,7 +50,7 @@ export const thursdayTasks: Task[] = [
   },
   {
     id: 'prototype-review',
-    title: 'Prototype review',
+    title: 'Group project meeting',
     date: DEMO_DATES.whatIfDay,
     timeLabel: '2:00 PM',
     durationHours: 4.1,
@@ -61,7 +61,7 @@ export const thursdayTasks: Task[] = [
   },
   {
     id: 'assignment-research',
-    title: 'Assignment research',
+    title: 'Operating Systems revision',
     date: DEMO_DATES.whatIfDay,
     timeLabel: 'Flexible',
     durationHours: 1.5,
@@ -72,7 +72,7 @@ export const thursdayTasks: Task[] = [
   },
   {
     id: 'team-call-prep',
-    title: 'Team call preparation',
+    title: 'Club event preparation',
     date: DEMO_DATES.whatIfDay,
     timeLabel: 'Flexible',
     durationHours: 1.5,
@@ -83,7 +83,7 @@ export const thursdayTasks: Task[] = [
   },
   {
     id: 'grocery-run',
-    title: 'Grocery run',
+    title: 'Laundry and groceries',
     date: DEMO_DATES.whatIfDay,
     timeLabel: 'Flexible',
     durationHours: 1.35,
@@ -96,7 +96,7 @@ export const thursdayTasks: Task[] = [
 
 export const proposedCafeShift: Task = {
   id: 'extra-cafe-shift',
-  title: 'Extra café shift',
+  title: 'Extra cafe shift',
   date: DEMO_DATES.whatIfDay,
   timeLabel: '6:00 PM',
   durationHours: 4,

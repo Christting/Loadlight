@@ -1,16 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, CheckCircle2, Circle, CircleDot, ListChecks, Pencil, Plus, Trash2, Undo2, X } from 'lucide-react';
+import { Check, CheckCircle2, Circle, CircleDot, ListChecks, Plus, Trash2, Undo2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Lumi } from '@/components/loadlight/Lumi';
-import { activeTaskLoad, computeSmartPriority, planItemLoadPoints, taskLoadPoints } from '@/lib/loadlight/load-logic';
+import { activeWeekTaskLoad, DEFAULT_WORKLOAD_WEEK_ANCHOR, computeSmartPriority, taskLoadPoints, workloadWeekRange } from '@/lib/loadlight/load-logic';
 import type {
   Demand,
   Flexibility,
-  PlanItem,
   StoredLoadLightState,
   Task,
   TaskCategory,
@@ -52,67 +51,6 @@ const statusLabels: Record<TaskStatus, string> = {
   skipped: 'Skipped',
 };
 
-const reminderOptions = [
-  { value: '', label: 'No reminder' },
-  { value: '5', label: '5 minutes before' },
-  { value: '10', label: '10 minutes before' },
-  { value: '15', label: '15 minutes before' },
-  { value: '30', label: '30 minutes before' },
-  { value: '60', label: '1 hour before' },
-];
-
-const DEFAULT_SUGGESTION_START = '19:00';
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-function toISODate(d: Date): string {
-  return d.toISOString().slice(0, 10);
-}
-
-// The real current week (Monday–Sunday) containing today — NOT a fixed demo
-// week. This is what auto-placement and the Weekly Plan tabs are built on.
-function getCurrentWeekDays(): { date: string; dayLabel: string; dayNumber: number }[] {
-  const today = new Date();
-  const jsDay = today.getDay(); // 0 = Sunday
-  const mondayOffset = jsDay === 0 ? -6 : 1 - jsDay;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + mondayOffset);
-  return WEEKDAY_LABELS.map((label, index) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + index);
-    return { date: toISODate(d), dayLabel: label, dayNumber: d.getDate() };
-  });
-}
-
-function weekdayLabelForISO(iso: string): string {
-  const parsed = new Date(iso + 'T00:00:00');
-  if (Number.isNaN(parsed.getTime())) return iso;
-  const jsDay = parsed.getDay();
-  return WEEKDAY_LABELS[jsDay === 0 ? 6 : jsDay - 1];
-}
-
-function formatTime12h(time: string): string {
-  const [hourStr, minuteStr] = time.split(':');
-  const hour = Number(hourStr);
-  const minute = Number(minuteStr);
-  if (Number.isNaN(hour) || Number.isNaN(minute)) return time;
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
-  return `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
-}
-
-function formatTimeRange(start: string, end?: string): string {
-  return end ? `${formatTime12h(start)}–${formatTime12h(end)}` : formatTime12h(start);
-}
-
-function addHoursToTime(time: string, hours: number): string {
-  const [hourStr, minuteStr] = time.split(':');
-  const totalMinutes = Number(hourStr) * 60 + Number(minuteStr) + Math.round(hours * 60);
-  const clamped = Math.max(0, Math.min(totalMinutes, 23 * 60 + 59));
-  const hh = Math.floor(clamped / 60);
-  const mm = clamped % 60;
-  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
-
 // The status control only toggles between Not started <-> In progress.
 // Completing a task is a deliberate separate action (the Complete button),
 // only available once the task is In progress — the app never guesses.
@@ -136,11 +74,6 @@ function newTaskId(title: string) {
   return `task-${slug || 'item'}-${Date.now()}`;
 }
 
-function newPlanId(title: string) {
-  const slug = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return `plan-${slug || 'item'}-${Date.now()}`;
-}
-
 // Demand still drives the load-points weighting (light/medium/heavy),
 // derived automatically from the hours the student types in — no separate
 // "how heavy does this feel" question, to keep the form short.
@@ -154,48 +87,11 @@ function todayHeaderLabel(): string {
   return new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 }
 
-type WeekEntry = {
-  key: string;
-  startTime: string;
-  endTime?: string;
-  title: string;
-  points: number;
-  sourceLabel: string;
-  kind: 'task' | 'plan';
-  taskId?: string;
-  planId?: string;
-};
-
-// --- Auto-placement -------------------------------------------------------
-// Every task lands on its actual due date on the Weekly Plan the moment
-// it's created. This is a placement, not a suggestion the system silently
-// moves around — the student can reschedule it anytime from either the
-// To-Do List or the Weekly Plan itself.
-function computeAutoSchedule(
-  task: { date: string; durationHours: number },
-  existingTasks: Task[],
-  existingPlanItems: PlanItem[],
-  currentWeek: { date: string; dayLabel: string; dayNumber: number }[],
-): { date: string; startTime: string; endTime: string } {
-  const targetDate = task.date || currentWeek[0]?.date || '';
-
-  const sameDayEnds = [
-    ...existingTasks.filter((item) => item.scheduledDate === targetDate && item.endTime).map((item) => item.endTime as string),
-    ...existingPlanItems.filter((item) => item.date === targetDate && item.endTime).map((item) => item.endTime as string),
-  ].sort();
-  const startTime = sameDayEnds.length > 0 && sameDayEnds[sameDayEnds.length - 1] > DEFAULT_SUGGESTION_START
-    ? sameDayEnds[sameDayEnds.length - 1]
-    : DEFAULT_SUGGESTION_START;
-
-  return { date: targetDate, startTime, endTime: addHoursToTime(startTime, task.durationHours) };
-}
-
 // --- Component ------------------------------------------------------------
 
 export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
   const tasks = stored.tasks ?? [];
-  const planItems = stored.planItems ?? [];
-  const currentWeek = useMemo(() => getCurrentWeekDays(), []);
+  const workloadWeek = useMemo(() => workloadWeekRange(DEFAULT_WORKLOAD_WEEK_ANCHOR), []);
   const [mode, setMode] = useState<'list' | 'week'>('list');
   const [formOpen, setFormOpen] = useState(false);
 
@@ -204,21 +100,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
   const [customCategory, setCustomCategory] = useState('');
   const [hours, setHours] = useState('');
   const [flexibility, setFlexibility] = useState<Flexibility>('flexible');
-  const [date, setDate] = useState('');
-
-  const [schedulingTaskId, setSchedulingTaskId] = useState<string | null>(null);
-  const [scheduleDate, setScheduleDate] = useState('');
-  const [scheduleStart, setScheduleStart] = useState('');
-  const [scheduleEnd, setScheduleEnd] = useState('');
-  const [scheduleReminder, setScheduleReminder] = useState('');
-
-  const [planFormMode, setPlanFormMode] = useState<'closed' | 'add' | 'edit'>('closed');
-  const [editingPlanItemId, setEditingPlanItemId] = useState<string | null>(null);
-  const [planTitle, setPlanTitle] = useState('');
-  const [planStart, setPlanStart] = useState('');
-  const [planEnd, setPlanEnd] = useState('');
-
-  const load = useMemo(() => activeTaskLoad(tasks), [tasks]);
+  const load = useMemo(() => activeWeekTaskLoad(tasks), [tasks]);
   const loadPercent = Math.min(120, Math.round(load));
   const tone = loadStatusTone(load);
   const draftHours = Number(hours);
@@ -226,7 +108,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     ? taskLoadPoints({
       id: 'draft-task',
       title,
-      date,
+      date: '',
       timeLabel: 'Flexible',
       durationHours: draftHours,
       demand: demandFromHours(draftHours),
@@ -248,7 +130,6 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     setCustomCategory('');
     setHours('');
     setFlexibility('flexible');
-    setDate('');
   }
 
   function addTask(event: React.FormEvent) {
@@ -256,12 +137,10 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     const parsedHours = Number(hours);
     if (!title.trim() || !parsedHours || parsedHours <= 0) return;
 
-    const suggestion = computeAutoSchedule({ date, durationHours: parsedHours }, tasks, planItems, currentWeek);
-
     const task: Task = {
       id: newTaskId(title),
       title: title.trim(),
-      date,
+      date: '',
       timeLabel: 'Flexible',
       durationHours: parsedHours,
       demand: demandFromHours(parsedHours),
@@ -270,10 +149,9 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
       flexibility,
       loadMix: {},
       status: 'not-started',
-      scheduledDate: suggestion.date,
-      startTime: suggestion.startTime,
-      endTime: suggestion.endTime,
-      autoScheduled: true,
+      weekStart: workloadWeek.start,
+      weekEnd: workloadWeek.end,
+      autoScheduled: false,
     };
     onSave({ ...stored, tasks: [task, ...tasks] }, 'Task added.');
     resetForm();
@@ -310,176 +188,6 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     onSave(
       { ...stored, tasks: tasks.map((item) => (item.id === task.id ? { ...item, priorityOverride: value || undefined } : item)) },
       'Priority updated.',
-    );
-  }
-
-  function openSchedule(task: Task) {
-    setSchedulingTaskId(task.id);
-    setScheduleDate(task.scheduledDate ?? '');
-    setScheduleStart(task.startTime ?? '');
-    setScheduleEnd(task.endTime ?? '');
-    setScheduleReminder(task.reminderMinutesBefore != null ? String(task.reminderMinutesBefore) : '');
-  }
-
-  function closeSchedule() {
-    setSchedulingTaskId(null);
-  }
-
-  function saveSchedule(event: React.FormEvent, task: Task) {
-    event.preventDefault();
-    onSave(
-      {
-        ...stored,
-        tasks: tasks.map((item) =>
-          item.id === task.id
-            ? {
-                ...item,
-                scheduledDate: scheduleDate || undefined,
-                startTime: scheduleStart || undefined,
-                endTime: scheduleEnd || undefined,
-                reminderMinutesBefore: scheduleReminder === '' ? undefined : Number(scheduleReminder),
-                autoScheduled: false,
-              }
-            : item,
-        ),
-      },
-      'Schedule saved.',
-    );
-    closeSchedule();
-  }
-
-  function clearSchedule(task: Task) {
-    onSave(
-      {
-        ...stored,
-        tasks: tasks.map((item) =>
-          item.id === task.id
-            ? { ...item, scheduledDate: undefined, startTime: undefined, endTime: undefined, reminderMinutesBefore: undefined, autoScheduled: false }
-            : item,
-        ),
-      },
-      'Schedule removed.',
-    );
-    closeSchedule();
-  }
-
-  function openAddPlan() {
-    setPlanTitle('');
-    setPlanStart('');
-    setPlanEnd('');
-    setEditingPlanItemId(null);
-    setPlanFormMode('add');
-  }
-
-  function openEditPlan(item: PlanItem) {
-    setPlanTitle(item.title);
-    setPlanStart(item.startTime);
-    setPlanEnd(item.endTime ?? '');
-    setEditingPlanItemId(item.id);
-    setPlanFormMode('edit');
-  }
-
-  function closePlanForm() {
-    setPlanFormMode('closed');
-    setEditingPlanItemId(null);
-  }
-
-  function submitPlanForm(event: React.FormEvent, forDate: string) {
-    event.preventDefault();
-    if (!planTitle.trim() || !planStart || !planEnd) return;
-
-    if (planFormMode === 'edit' && editingPlanItemId) {
-      onSave(
-        {
-          ...stored,
-          planItems: planItems.map((item) =>
-            item.id === editingPlanItemId
-              ? { ...item, title: planTitle.trim(), startTime: planStart, endTime: planEnd || undefined }
-              : item,
-          ),
-        },
-        'Plan updated.',
-      );
-    } else {
-      const item: PlanItem = {
-        id: newPlanId(planTitle),
-        title: planTitle.trim(),
-        date: forDate,
-        startTime: planStart,
-        endTime: planEnd || undefined,
-      };
-      onSave({ ...stored, planItems: [...planItems, item] }, 'Added to plan.');
-    }
-    closePlanForm();
-  }
-
-  function deletePlanItem(id: string) {
-    onSave({ ...stored, planItems: planItems.filter((item) => item.id !== id) }, 'Removed from plan.');
-    if (editingPlanItemId === id) closePlanForm();
-  }
-
-  function renderScheduleEditor(task: Task) {
-    const hasSchedule = Boolean(task.scheduledDate && task.startTime);
-    const isScheduling = schedulingTaskId === task.id;
-
-    if (isScheduling) {
-      return (
-        <form className="schedule-form" onSubmit={(event) => saveSchedule(event, task)}>
-          <label>
-            Date
-            <Input type="date" value={scheduleDate} onChange={(event) => setScheduleDate(event.target.value)} />
-          </label>
-          <div className="schedule-form-times">
-            <label>
-              Start time
-              <Input type="time" value={scheduleStart} onChange={(event) => setScheduleStart(event.target.value)} />
-            </label>
-            <label>
-              End time
-              <Input type="time" value={scheduleEnd} onChange={(event) => setScheduleEnd(event.target.value)} />
-            </label>
-          </div>
-          <label>
-            Reminder
-            <NativeSelect value={scheduleReminder} onChange={(event) => setScheduleReminder(event.target.value)}>
-              {reminderOptions.map((option) => (
-                <NativeSelectOption key={option.value} value={option.value}>
-                  {option.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </label>
-          <div className="schedule-form-actions">
-            <Button type="submit" className="primary-action">Save schedule</Button>
-            <Button type="button" variant="outline" onClick={closeSchedule}>Cancel</Button>
-            {hasSchedule && (
-              <button type="button" className="text-action-btn" onClick={() => clearSchedule(task)}>
-                Remove
-              </button>
-            )}
-          </div>
-        </form>
-      );
-    }
-
-    if (hasSchedule) {
-      return (
-        <div className="schedule-display">
-          <p className="schedule-line">📅 Planned: {weekdayLabelForISO(task.scheduledDate!)}, {formatTimeRange(task.startTime!, task.endTime)}</p>
-          {task.reminderMinutesBefore != null && (
-            <p className="schedule-line">🔔 Reminder: {task.reminderMinutesBefore} min before</p>
-          )}
-          <button type="button" className="edit-schedule-link" onClick={() => openSchedule(task)}>
-            Reschedule
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <button type="button" className="schedule-chip add" onClick={() => openSchedule(task)}>
-        + Schedule
-      </button>
     );
   }
 
@@ -522,7 +230,6 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
               </NativeSelect>
             </div>
           )}
-          {!closed && renderScheduleEditor(task)}
         </div>
         <div className="task-actions">
           <button type="button" className="text-action-btn" onClick={() => deleteTask(task.id)}>
@@ -546,37 +253,8 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     );
   }
 
-  // --- Weekly view: merges scheduled tasks + personal plan items, sorted by time ---
-  const weekBuckets = currentWeek.map((day) => {
-    const dayTasks = pendingTasks.filter((task) => task.scheduledDate === day.date && task.startTime);
-    const dayPlanItems = planItems.filter((item) => item.date === day.date);
-    const entries: WeekEntry[] = [
-      ...dayTasks.map((task) => ({
-        key: `task-${task.id}`,
-        startTime: task.startTime!,
-        endTime: task.endTime,
-        title: task.title,
-        points: taskLoadPoints(task),
-        sourceLabel: `To-Do List task · ${taskLoadPoints(task)} pts`,
-        kind: 'task' as const,
-        taskId: task.id,
-      })),
-      ...dayPlanItems.map((item) => ({
-        key: `plan-${item.id}`,
-        startTime: item.startTime,
-        endTime: item.endTime,
-        title: item.title,
-        points: planItemLoadPoints(item),
-        sourceLabel: `Personal plan · ${planItemLoadPoints(item)} pts`,
-        kind: 'plan' as const,
-        planId: item.id,
-      })),
-    ].sort((a, b) => a.startTime.localeCompare(b.startTime));
-    const dayPoints = entries.reduce((total, entry) => total + entry.points, 0);
-    return { ...day, entries, dayPoints };
-  });
-  const [activeDay, setActiveDay] = useState<string>(currentWeek[0]?.date ?? '');
-  const activeDayBucket = weekBuckets.find((day) => day.date === activeDay);
+  const weeklyTasks = pendingTasks.filter((task) => task.weekStart === workloadWeek.start && task.weekEnd === workloadWeek.end);
+  const weeklyTaskPoints = weeklyTasks.reduce((total, task) => total + taskLoadPoints(task), 0);
 
   return (
     <div className="view-content tasks-view">
@@ -699,10 +377,9 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
                   </div>
                 </fieldset>
 
-                <label>
-                  Deadline
-                  <Input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-                </label>
+                <div className="task-week-note" aria-label="Demo week note">
+                  <span>Auto-set to this week&apos;s workload range.</span>
+                </div>
               </div>
 
               <div className="task-form-actions">
@@ -735,120 +412,29 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
             <div>
               <h2 id="week-title">Weekly plan</h2>
             </div>
+            <small>{weeklyTaskPoints} pts</small>
           </div>
-          <div className="week-tabs" role="tablist" aria-label="Day of week">
-            {weekBuckets.map((day) => (
-              <button
-                key={day.date}
-                type="button"
-                role="tab"
-                aria-selected={activeDay === day.date}
-                className={activeDay === day.date ? 'active' : ''}
-                onClick={() => { setActiveDay(day.date); closePlanForm(); closeSchedule(); }}
-              >
-                <span className="week-tab-day">{day.dayLabel}</span>
-                <span className="week-tab-date">{day.dayNumber}</span>
-                <span className="week-tab-pts">{day.dayPoints} pts</span>
-              </button>
-            ))}
+          <div className="week-load-summary">
+            <div>
+              <span>This week</span>
+              <strong>{loadPercent}%</strong>
+            </div>
+            <p>{weeklyTasks.length} active task{weeklyTasks.length === 1 ? '' : 's'} are counted in this workload range.</p>
           </div>
-
-          {activeDayBucket && (
-            <>
-              <div className="week-day-summary">
-                <span>{activeDayBucket.dayLabel} {activeDayBucket.dayNumber}</span>
-                <span>{activeDayBucket.dayPoints} pts carried</span>
-              </div>
-              <div className="week-entry-list">
-                {activeDayBucket.entries.length === 0 ? (
-                  <p className="empty-scenario-note">Nothing planned this day.</p>
-                ) : (
-                  activeDayBucket.entries.map((entry) => {
-                    const entryTask = entry.kind === 'task' ? tasks.find((task) => task.id === entry.taskId) : undefined;
-                    const entryPlan = entry.kind === 'plan' ? planItems.find((item) => item.id === entry.planId) : undefined;
-                    return (
-                      <div className="week-entry" key={entry.key}>
-                        <div className="week-entry-time">{formatTimeRange(entry.startTime, entry.endTime)}</div>
-                        <div className="week-entry-body">
-                          <strong>{entry.title}</strong>
-                          <span className="week-entry-source">↳ {entry.sourceLabel}</span>
-                          {entryTask && schedulingTaskId === entryTask.id && (
-                            <div className="week-entry-editor">{renderScheduleEditor(entryTask)}</div>
-                          )}
-                          {entryPlan && planFormMode === 'edit' && editingPlanItemId === entryPlan.id && (
-                            <form className="schedule-form week-entry-editor" onSubmit={(event) => submitPlanForm(event, entryPlan.date)}>
-                              <label>
-                                Title
-                                <Input value={planTitle} onChange={(event) => setPlanTitle(event.target.value)} autoFocus />
-                              </label>
-                              <div className="schedule-form-times">
-                                <label>
-                                  Start time
-                                  <Input type="time" required value={planStart} onChange={(event) => setPlanStart(event.target.value)} />
-                                </label>
-                                <label>
-                                  End time
-                                  <Input type="time" required value={planEnd} onChange={(event) => setPlanEnd(event.target.value)} />
-                                </label>
-                              </div>
-                              <div className="schedule-form-actions">
-                                <Button type="submit" className="primary-action">Save</Button>
-                                <Button type="button" variant="outline" onClick={closePlanForm}>Cancel</Button>
-                              </div>
-                            </form>
-                          )}
-                        </div>
-                        {entry.kind === 'task' && entryTask && schedulingTaskId !== entryTask.id && (
-                          <button type="button" className="week-entry-edit" onClick={() => openSchedule(entryTask)}>
-                            Reschedule
-                          </button>
-                        )}
-                        {entry.kind === 'plan' && entryPlan && !(planFormMode === 'edit' && editingPlanItemId === entryPlan.id) && (
-                          <div className="week-entry-plan-actions">
-                            <button type="button" className="week-entry-edit" aria-label={`Edit ${entry.title}`} onClick={() => openEditPlan(entryPlan)}>
-                              <Pencil />
-                            </button>
-                            <button type="button" className="week-entry-delete" aria-label={`Remove ${entry.title} from plan`} onClick={() => deletePlanItem(entryPlan.id)}>
-                              <Trash2 />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {planFormMode === 'closed' && (
-                <Button type="button" variant="outline" className="add-to-plan-button" onClick={openAddPlan}>
-                  <Plus /> Add to plan
-                </Button>
-              )}
-
-              {planFormMode === 'add' && (
-                <form className="plan-form" onSubmit={(event) => submitPlanForm(event, activeDay)}>
-                  <label>
-                    Title
-                    <Input value={planTitle} onChange={(event) => setPlanTitle(event.target.value)} placeholder="e.g. Gym" autoFocus />
-                  </label>
-                  <div className="schedule-form-times">
-                    <label>
-                      Start time
-                      <Input type="time" required value={planStart} onChange={(event) => setPlanStart(event.target.value)} />
-                    </label>
-                    <label>
-                      End time
-                      <Input type="time" required value={planEnd} onChange={(event) => setPlanEnd(event.target.value)} />
-                    </label>
+          <div className="weekly-task-plan">
+            {weeklyTasks.length ? weeklyTasks.map((task) => {
+              const priority = computeSmartPriority(task, tasks);
+              return (
+                <article className="weekly-task-card" key={task.id}>
+                  <div>
+                    <strong>{task.title}</strong>
+                    <span>{categoryLabel(task)} · {task.durationHours}h · {priorityLabels[priority]} priority</span>
                   </div>
-                  <div className="task-form-actions">
-                    <Button type="submit" className="primary-action">Save</Button>
-                    <Button type="button" variant="outline" onClick={closePlanForm}>Cancel</Button>
-                  </div>
-                </form>
-              )}
-            </>
-          )}
+                  <b>{taskLoadPoints(task)} pts</b>
+                </article>
+              );
+            }) : <p className="empty-scenario-note">No active tasks in this week. Add a task from the To-Do List.</p>}
+          </div>
         </section>
       )}
 

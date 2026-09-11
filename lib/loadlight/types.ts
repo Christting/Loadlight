@@ -46,6 +46,9 @@ export interface Task {
   status?: TaskStatus;
   /** Optional — when the student actually plans to work on this, separate from the due date. */
   scheduledDate?: string;
+  /** Auto-assigned workload bucket. Tasks are counted by week, not by a user-picked date. */
+  weekStart?: string;
+  weekEnd?: string;
   startTime?: string;
   endTime?: string;
   /** True if this schedule was placed automatically by the system rather than chosen by the student. */
@@ -121,4 +124,5 @@ export interface StoredLoadLightState {
   whatIfPlans?: WhatIfPlan[];
   tasks?: Task[];
   planItems?: PlanItem[];
+  loadLimit?: number;
 }
