@@ -1,3 +1,5 @@
+<a id="top"></a>
+
 <div align="center">
 
 # LoadLight
@@ -15,9 +17,48 @@ Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 ![Storage](https://img.shields.io/badge/storage-localStorage-8dd2d4)
 ![AI](https://img.shields.io/badge/AI-Lumi%20support-d8f2df)
 
+<br />
+<br />
+
+<a href="#submission-links"><strong>Submission Links</strong></a>
+&nbsp;·&nbsp;
+<a href="#reviewer-fast-path"><strong>Reviewer Fast Path</strong></a>
+&nbsp;·&nbsp;
+<a href="#2-ideation--process"><strong>Ideation</strong></a>
+&nbsp;·&nbsp;
+<a href="#4-what-makes-it-different"><strong>Novelty</strong></a>
+&nbsp;·&nbsp;
+<a href="#5-technical-architecture--feasibility"><strong>Tech</strong></a>
+&nbsp;·&nbsp;
+<a href="#14-rubric-coverage-map"><strong>Rubric Map</strong></a>
+
 </div>
 
 ---
+
+## At a Glance
+
+| Question | Answer |
+|---|---|
+| What problem are we solving? | Students cannot clearly see how much workload they are carrying until it becomes too heavy. |
+| Who is it for? | University students balancing academic work, group projects, part-time work, clubs, errands, social pressure, and wellbeing. |
+| What is the main twist? | LoadLight turns tasks into a workload score and lets students test commitments before saying yes. |
+| Why is it novel? | It combines productivity planning, predictive What-if simulation, overload repair, and emotional support in one flow. |
+| Why can it be built? | The prototype already uses a realistic Next.js frontend, localStorage state, shared workload logic, editable task planning, and AI support routes. |
+| Why does it matter? | It helps students act before overload becomes burnout, missed deadlines, or crisis-level stress. |
+
+## Rubric Jump Buttons
+
+| Scoring area | Quick jump |
+|---|---|
+| Ideation 25% | [Ideas considered](#21-ideas-we-considered), [Ideation boards](#22-ideation-boards), [Full ideation evidence](#9-full-ideation-evidence) |
+| Creativity and Novelty 15% | [What makes it different](#4-what-makes-it-different), [Why this direction won](#212-why-this-direction-won) |
+| Feasibility 15% | [Technical architecture](#5-technical-architecture--feasibility), [Risks and mitigation](#feasibility-risk-and-mitigation) |
+| Design 10% | [Design and prototype](#3-design--prototype), [Prototype interaction details](#prototype-interaction-details) |
+| Impact 20% | [Impact](#6-impact), [Future and business plan](#12-future-plan-and-business-plan) |
+| Presentation 15% | [Demo guide](#7-demo-guide), [Video outline](#8-video-outline) |
+
+<a id="submission-links"></a>
 
 ## Submission Links
 
@@ -29,6 +70,33 @@ Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 | Live demo | TBD - deployed app link |
 | Video presentation | TBD - unlisted YouTube link |
 | Presentation slides | TBD - public Canva link |
+
+<a id="reviewer-fast-path"></a>
+
+## Reviewer Fast Path
+
+If you only have a few minutes, read these sections in this order:
+
+| Step | Jump | Why this section matters |
+|---|---|---|
+| 1 | [Problem and solution](#1-project-overview) | Shows the challenge context, target user, and core idea. |
+| 2 | [What makes it different](#4-what-makes-it-different) | Explains novelty and why this is not just another planner. |
+| 3 | [Ideation evidence](#2-ideation--process) | Shows breadth, dropped ideas, mentor feedback, and iteration. |
+| 4 | [Prototype demo flow](#7-demo-guide) | Shows how judges can try the product end to end. |
+| 5 | [Feasibility](#5-technical-architecture--feasibility) | Shows stack, architecture, constraints, and realistic build scope. |
+| 6 | [Rubric coverage](#14-rubric-coverage-map) | Maps scoring criteria directly to README evidence. |
+
+## Evidence Pack
+
+| Evidence | File / section |
+|---|---|
+| Editable team ideation mindmap | [docs/loadlight-team-ideation-mindmap.drawio](docs/loadlight-team-ideation-mindmap.drawio) |
+| Mindmap HTML preview | [docs/loadlight-ideas-mindmap.html](docs/loadlight-ideas-mindmap.html) |
+| Detailed ideation notes | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
+| Ideas considered CSV | [docs/ideas-considered-table.csv](docs/ideas-considered-table.csv) |
+| Mentor feedback CSV | [docs/mentor-feedback-table.csv](docs/mentor-feedback-table.csv) |
+| Workload logic explanation | [10. Workload Logic Details](#10-workload-logic-details) |
+| Demo guide | [7. Demo Guide](#7-demo-guide) |
 
 ## Quick Navigation
 
@@ -108,6 +176,8 @@ The app combines task planning with emotional support. Students add their tasks,
 | Workload is not only time. | Load includes effort and category, not just hours. |
 | Emotional stress affects planning decisions. | Lumi Care, Journal, Reflect, and Boundary are part of the product, not separate decoration. |
 | Judges need to understand the prototype quickly. | Demo mode follows a clear story: add task -> see load -> test What-if -> Balance -> Care. |
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ## 2. Ideation & Process
 
@@ -199,6 +269,8 @@ This mindmap shows how our team started from different directions: stress suppor
 | 2026-09-12 | Team feedback | Users should be able to set reminders before tasks. | We added reminder options during task creation and editing. |
 | 2026-09-12 | Team feedback | Workload data should not be hardcoded separately on each page. | We aligned the app around one shared workload calculation. |
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 3. Design & Prototype
 
 UI Prototype: TBD - public design or live demo link
@@ -249,6 +321,8 @@ Important UX choices:
 - The Dashboard follows the real current week, while Tasks and Balance can inspect selected dates or weeks.
 - The user can always edit or override because real student life changes quickly.
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 4. What Makes It Different
 
 | Existing approach | Limitation | LoadLight's difference |
@@ -265,6 +339,8 @@ Novel features:
 - Shared workload logic: Dashboard, Tasks, What-if, and Balance read from the same calculation.
 - Week-based Balance: Users reduce overload by moving flexible tasks to another week, keeping important work, or dropping what is unnecessary.
 - Lumi Care: Emotional support is connected to real workload moments through Journal, Reflect, Recovery, and Boundary.
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ## 5. Technical Architecture & Feasibility
 
@@ -351,6 +427,8 @@ Future build scope:
 - Improve personalization so LoadLight learns which types of load affect each student most.
 - Explore university partnerships as part of student wellbeing support.
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 6. Impact
 
 ### Target users
@@ -372,6 +450,8 @@ LoadLight can start as a freemium student app where basic workload tracking is f
 
 The bigger opportunity is with universities. Schools already invest in student wellbeing, but support often arrives after stress becomes serious. LoadLight can help students notice overload earlier and give schools a practical tool for prevention-focused wellbeing support.
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 7. Demo Guide
 
 Suggested judge flow:
@@ -382,6 +462,8 @@ Suggested judge flow:
 4. If the projected load is too high, go to Balance.
 5. Move, keep, or drop tasks, or try AI auto plan and confirm changes.
 6. Open Care and show Boundary or Journal to explain how Lumi supports emotional stress.
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ## 8. Video Outline
 
@@ -429,6 +511,8 @@ Technically, LoadLight is built with Next.js, React, TypeScript, and localStorag
 For the future, LoadLight can connect with calendars, school deadlines, and task platforms so students do not need to manually enter everything forever. It can also become more personal by learning which type of load affects each student most. For growth, LoadLight can start as a freemium student app, with premium AI planning, calendar sync, deeper insights, and personalized recovery. The larger business opportunity is university partnerships, where schools can use LoadLight as early wellbeing support before overload becomes burnout.
 
 Most productivity tools ask students to do more. LoadLight asks a healthier question: can this week actually hold this? That is why we believe LoadLight deserves to be built.
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ## 9. Full Ideation Evidence
 
@@ -646,6 +730,8 @@ flowchart LR
 | AI planning | Auto plan, suggested moves, generated replies. | Kept with confirmation and user control. |
 | Calendar planner | Scheduling and rescheduling tasks. | Partially kept through start date, due date, day plan, weekly plan, and reminders. |
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 10. Workload Logic Details
 
 LoadLight's workload score is task-based. This is important because the app should not show random or hardcoded percentages.
@@ -704,6 +790,8 @@ The prototype assumes a realistic student work capacity of `3 hours per day`.
 
 Users can still override the system priority because the app should support the student, not control them.
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 11. Demo Mode Notes
 
 The demo mode should show the main product story clearly:
@@ -719,6 +807,8 @@ The demo mode should show the main product story clearly:
 9. Journal and Lumi Care show that stress is emotional too.
 10. The final takeaway is that LoadLight helps students see and reduce load before burnout.
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 12. Future Plan and Business Plan
 
 For the future, we want LoadLight to fit into real student life.
@@ -730,6 +820,8 @@ LoadLight can also become more personal over time. Not everyone is drained by th
 For business, LoadLight can start as a freemium student app. Basic workload tracking can stay free, while premium features could include AI planning, calendar sync, deeper insights, and personalized recovery.
 
 There is also a university partnership opportunity. Schools are already trying to support student wellbeing. LoadLight can help them do it earlier by helping students notice overload before it turns into burnout, missed deadlines, or crisis-level stress.
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ## 13. Submission Checklist
 
@@ -754,6 +846,8 @@ Before final submission:
 
 Deadline: 13 September 2026, 11:59 PM.
 
+<p align="right"><a href="#top">Back to top</a></p>
+
 ## 14. Rubric Coverage Map
 
 | Rubric area | Evidence in this README |
@@ -768,6 +862,8 @@ Deadline: 13 September 2026, 11:59 PM.
 | Design | Prototype flow, screen list, UX rationale, and visual direction. |
 | Impact | Target users, before/after table, scalability, and university partnership plan. |
 | Presentation | Video outline and full script. |
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ## 15. Appendix: Feature Rationale in Short Mindmap Format
 
@@ -878,6 +974,8 @@ Why: useful academically, but not directly connected to workload balance.
 DROPPED  
 AI therapist chatbot  
 Why: too risky and too broad; LoadLight supports stress but does not replace professional help.
+
+<p align="right"><a href="#top">Back to top</a></p>
 
 ## 16. Setup
 
