@@ -3,6 +3,7 @@
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Brain, Check, Coffee, Copy, Moon, PenLine, Scale, Search, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   activeWeekTasks,
   activeWeekTaskLoad,
@@ -79,6 +80,14 @@ function nextWeekDayLabel(date: string) {
   return `Next ${dayLabel(date, 'week')}`;
 }
 
+function compactDateLabel(date: string): string {
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+}
+
+function rangeLabel(start: string, end: string): string {
+  return `${compactDateLabel(start)} - ${compactDateLabel(end)}`;
+}
+
 function buildBalanceMoves(tasks: Task[], activeDate: string, scope: BalanceScope): BalanceMove[] {
   return activeWeekTasks(tasks, activeDate)
     .sort((a, b) => taskLoadPoints(b) - taskLoadPoints(a))
@@ -125,29 +134,39 @@ function balanceLoadCopy(load: number, loadLimit: number, scope: BalanceScope) {
 export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const balancePlanRef = useRef<HTMLElement | null>(null);
-  const anchorDate = DEFAULT_WORKLOAD_WEEK_ANCHOR;
   const balanceScope: BalanceScope = 'week';
+  const [selectedWeekAnchor, setSelectedWeekAnchor] = useState(DEFAULT_WORKLOAD_WEEK_ANCHOR);
   const [balanceStarted, setBalanceStarted] = useState(false);
+  const selectedWeek = workloadWeekRange(selectedWeekAnchor);
+  const selectedWeekTasks = useMemo(() => activeWeekTasks(stored.tasks ?? [], selectedWeekAnchor), [stored.tasks, selectedWeekAnchor]);
   const weekLoad = useMemo(() => {
-    return Math.min(120, Math.round(activeWeekTaskLoad(stored.tasks ?? [], anchorDate)));
-  }, [stored.tasks, anchorDate]);
+    return Math.round(activeWeekTaskLoad(stored.tasks ?? [], selectedWeekAnchor));
+  }, [stored.tasks, selectedWeekAnchor]);
   const displayedLoad = weekLoad;
   const loadLimit = stored.loadLimit ?? 100;
-  const balanceMoves = useMemo(() => buildBalanceMoves(stored.tasks ?? [], anchorDate, balanceScope), [stored.tasks, anchorDate, balanceScope]);
+  const balanceMoves = useMemo(() => buildBalanceMoves(stored.tasks ?? [], selectedWeekAnchor, balanceScope), [stored.tasks, selectedWeekAnchor, balanceScope]);
   const relocatedLoad = balanceMoves.reduce((total, move) => total + move.relocatedPoints, 0);
   const autoPlan = useMemo(() => {
     let remaining = Math.max(0, displayedLoad - loadLimit);
-    const decisions: Record<string, BalanceDecision> = {};
-    balanceMoves.forEach((move) => {
-      if (remaining > 0) {
-        decisions[move.taskId] = 'move';
-        remaining -= move.relocatedPoints;
-      } else {
-        decisions[move.taskId] = 'keep';
-      }
+    const decisions = Object.fromEntries(balanceMoves.map((move) => [move.taskId, 'keep'])) as Record<string, BalanceDecision>;
+    balanceMoves.filter((move) => {
+      const task = (stored.tasks ?? []).find((item) => item.id === move.taskId);
+      return task?.flexibility === 'flexible';
+    }).forEach((move) => {
+      if (remaining <= 0) return;
+      decisions[move.taskId] = 'move';
+      remaining -= move.relocatedPoints;
+    });
+    balanceMoves.filter((move) => {
+      const task = (stored.tasks ?? []).find((item) => item.id === move.taskId);
+      return task?.flexibility !== 'flexible';
+    }).forEach((move) => {
+      if (remaining <= 0) return;
+      decisions[move.taskId] = 'drop';
+      remaining -= move.relocatedPoints;
     });
     return decisions;
-  }, [balanceMoves, displayedLoad, loadLimit]);
+  }, [balanceMoves, displayedLoad, loadLimit, stored.tasks]);
   const [taskDecisions, setTaskDecisions] = useState<Record<string, BalanceDecision>>({});
   const [activeTool, setActiveTool] = useState<BalanceTool>('balance');
   const [activeBalanceMode, setActiveBalanceMode] = useState<BalanceMode>('rebalance');
@@ -201,11 +220,17 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
   const progressTarget = targetReduction || relocatedLoad;
   const loadCopy = balanceLoadCopy(displayedLoad, loadLimit, balanceScope);
   const needsBalance = displayedLoad > loadLimit;
-  const showBalanceSteps = balanceMoves.length > 0;
+  const showBalanceSteps = balanceMoves.length > 0 && (needsBalance || balanceStarted);
   const mostStressfulTask = balanceMoves[0];
 
   function setTaskDecision(taskId: string, decision: BalanceDecision) {
     setTaskDecisions((current) => ({ ...current, [taskId]: decision }));
+  }
+
+  function choosePlanWeek(anchor: string) {
+    setSelectedWeekAnchor(anchor);
+    setBalanceStarted(false);
+    setShowAutoPlan(false);
   }
 
   function chooseRecovery(choice: RecoveryChoice) {
@@ -286,7 +311,7 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
       const decision = decisions[task.id];
       if (decision === 'drop') return { ...task, status: 'skipped' as const };
       if (decision === 'move') {
-        const currentDate = task.scheduledDate || task.date || anchorDate;
+        const currentDate = task.scheduledDate || task.date || selectedWeekAnchor;
         const nextWeekDate = nextWeekISO(currentDate);
         const nextWeek = workloadWeekRange(nextWeekDate);
         return {
@@ -468,6 +493,16 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
         <h1>{activeBalanceMode === 'rebalance' ? loadCopy.title : activeBalanceMode === 'recover' ? 'Take care first.' : activeBalanceMode === 'reflect' ? 'Why am I stressed?' : 'Set a boundary.'}</h1>
         <p>{activeBalanceMode === 'rebalance' ? `${displayedLoad}% week load from your current tasks. Move, keep, or drop until it feels lighter.` : activeBalanceMode === 'recover' ? 'Pick a reset, find the pressure, or prepare a calmer reply.' : activeBalanceMode === 'reflect' ? 'Find the real reason first, then choose the right next step.' : 'Copy a kind reply when you need to protect your capacity.'}</p>
       </header>
+
+      {activeTool === 'balance' && activeBalanceMode === 'rebalance' && <div className="plan-week-picker balance-week-picker" aria-label="Choose balance week">
+        <button type="button" onClick={() => choosePlanWeek(addDaysISO(selectedWeek.start, -7))}>Previous</button>
+        <label>
+          <span>Pick week</span>
+          <Input type="date" value={selectedWeekAnchor} onChange={(event) => choosePlanWeek(event.target.value)} aria-label="Pick balance week" />
+        </label>
+        <button type="button" onClick={() => choosePlanWeek(addDaysISO(selectedWeek.start, 7))}>Next</button>
+        <small>{rangeLabel(selectedWeek.start, selectedWeek.end)} · {selectedWeekTasks.length} task{selectedWeekTasks.length === 1 ? '' : 's'}</small>
+      </div>}
 
       {activeTool === 'care' && <section className="care-mode-tabs" aria-label="Care tools">
         <button type="button" className={activeBalanceMode === 'recover' ? 'active' : ''} onClick={() => setActiveBalanceMode('recover')}><Moon />Recovery</button>
