@@ -49,6 +49,28 @@ The app combines task planning with emotional support. Students add their tasks,
 | Boundary | Helps users write calmer replies when they need to say no or move something. | Treats boundaries as part of workload protection. |
 | Community | Secondary peer support area. | Useful, but kept secondary so the core product stays focused. |
 
+### Target users and stakeholders
+
+| Group | Need / pain point | How LoadLight responds |
+|---|---|---|
+| University students with heavy academic weeks | They may know their tasks, but not the real combined load. | Dashboard and workload calculation show the current week load clearly. |
+| Students with part-time work or club commitments | Non-academic commitments still take energy and time, but are often ignored by study planners. | Tasks support academic, work, social, personal, wellbeing, and custom categories. |
+| Students who struggle to reject requests | They may say yes out of guilt before checking capacity. | What-if shows impact before accepting, and Boundary helps draft calmer replies. |
+| Students already feeling overwhelmed | They may need one small next step, not a huge productivity system. | Balance gives move / keep / drop choices, while Care gives recovery and reflection. |
+| Mentors / reviewers / educators | They need to see whether the idea is explainable, feasible, and deployable. | README documents ideation, mentor feedback, architecture, scope, and demo flow. |
+| Future university wellbeing teams | They need earlier signals before stress turns into crisis-level support needs. | Future plan positions LoadLight as an early wellbeing support tool. |
+
+### Design principles derived from the problem
+
+| Problem insight | Product decision |
+|---|---|
+| Students are already mentally overloaded. | Keep the main navigation simple: Home, Tasks, What-if, Balance, Me. |
+| A long list can make stress worse. | Dashboard starts with one workload signal before showing details. |
+| Students need control, not another app bossing them around. | AI auto plan never applies changes until the user confirms. |
+| Workload is not only time. | Load includes effort and category, not just hours. |
+| Emotional stress affects planning decisions. | Lumi Care, Journal, Reflect, and Boundary are part of the product, not separate decoration. |
+| Judges need to understand the prototype quickly. | Demo mode follows a clear story: add task -> see load -> test What-if -> Balance -> Care. |
+
 ## 2. Ideation & Process
 
 ### 2.1 Ideas We Considered
@@ -83,6 +105,30 @@ Chosen ideas are listed first, followed by reduced and dropped ideas.
 | AI therapist chatbot | Dropped | Too risky and too broad. LoadLight supports stress, but does not replace professional help. |
 | Forced automatic scheduling | Dropped | It could feel controlling. The final app suggests plans but lets users decide. |
 | Static workload percentage | Dropped | Hardcoded numbers made pages inconsistent. Shared workload logic is more trustworthy. |
+
+### 2.1.1 Feature decision map
+
+| Category | Ideas inside this category | Final decision | Reasoning |
+|---|---|---|---|
+| Planning and task management | To-do list, add task form, day plan, weekly plan, reminders, reschedule/edit. | Kept | Planning is the base layer because workload cannot be calculated without task inputs. |
+| Workload awareness | Dashboard, workload percentage, heaviest load category, stress review history. | Kept | This is the core twist: students do not only need a list; they need capacity awareness. |
+| Decision support | What-if, AI auto plan, move / keep / drop. | Kept | These features help users make decisions before and during overload instead of reacting too late. |
+| Emotional support | Lumi chatbot, journal, recovery, reflect, boundary replies. | Kept | Student stress is emotional as well as logistical, so the app needs support beyond scheduling. |
+| Social support | Community space, peer encouragement. | Reduced | It can help, but it is not the clearest answer to workload calculation and could distract the demo. |
+| Game layer | Mini-games, reward shop, points. | Reduced / dropped | Recovery actions were kept because they help stress, but game rewards were dropped because they weaken the workload story. |
+| Automation layer | Forced auto-schedule, AI therapist, fully automatic task moving. | Dropped | High-risk and too controlling. Final version uses AI suggestions with user confirmation. |
+
+### 2.1.2 Why this direction won
+
+We chose the stress and workload manager direction because it combines the strongest parts of the ideas we explored:
+
+- From the to-do list idea, we kept task entry and completion.
+- From the calendar idea, we kept date-based planning.
+- From the wellness idea, we kept emotional support.
+- From the AI idea, we kept guided suggestions.
+- From the community/game ideas, we kept only the parts that support recovery.
+
+The final direction is stronger because it is not a pure productivity app and not a pure wellness app. LoadLight connects both sides: the visible schedule and the invisible emotional cost.
 
 ### 2.2 Ideation Boards
 
@@ -138,6 +184,33 @@ Key screens to include in the final README:
 | Care | Recover, Reflect, Boundary, and Journal support. |
 | Me | Load preference settings and user controls. |
 
+### Prototype interaction details
+
+| Flow | User action | System response | Why this improves UX |
+|---|---|---|---|
+| Add task | User enters title, category, start date, due date, estimated time, reminder, and flexibility. | Task is saved and workload recalculates immediately. | Users see cause and effect instead of guessing where the percentage came from. |
+| Edit / reschedule | User edits task details from To-do, Day plan, or Weekly plan. | Date range, priority, reminder, and workload update. | Users can correct the plan if the automatic schedule feels wrong. |
+| Day plan | User selects a date. | App shows tasks active on that day, including multi-day tasks. | Prevents the confusing case where a task only appears on its start date. |
+| Weekly plan | User selects a week. | App shows week load, daily distribution, and tasks on each day. | Makes weekly overload easier to understand. |
+| What-if | User tests a possible new commitment. | App forecasts the future load and suggests whether to accept, reject, or adjust. | Helps students check capacity before saying yes. |
+| Balance | User reviews overloaded week. | App highlights the heaviest task and gives move / keep / drop choices. | Reduces panic by turning overload into decisions. |
+| AI auto plan | User requests a suggested plan. | App suggests only enough changes to reduce overload and asks for confirmation. | Keeps automation useful but not forceful. |
+| Journal | User writes about stress or mood. | Lumi can analyze possible pressure sources and offer comfort or next steps. | Gives emotional stress a place to go instead of staying invisible. |
+| Boundary | User describes a difficult request. | Lumi drafts soft, firm, or short replies. | Helps students protect capacity without sounding rude. |
+
+### Visual and UX rationale
+
+The visual direction uses a soft cream and purple style with Lumi as a warm companion. This was chosen because the product deals with stress; a harsh productivity dashboard could make users feel judged or pressured. The design aims to feel calm, readable, and supportive while still showing useful numbers.
+
+Important UX choices:
+
+- Percentages are large because workload should be understood in one glance.
+- The app uses weekly language because student overload usually builds across a week, not just one day.
+- Balance uses clear verbs: move, keep, drop.
+- Care is separated from Balance so emotional support does not get mixed up with task repair.
+- The Dashboard follows the real current week, while Tasks and Balance can inspect selected dates or weeks.
+- The user can always edit or override because real student life changes quickly.
+
 ## 4. What Makes It Different
 
 | Existing approach | Limitation | LoadLight's difference |
@@ -184,6 +257,38 @@ Lumi support
   -> Gemini response
   -> Supportive reply shown in app
 ```
+
+### Data model summary
+
+| Data object | Important fields | Used by |
+|---|---|---|
+| Task | id, title, category, customCategory, start date, due date, estimated hours, demand, flexibility, reminder, status, priority override. | Tasks, Dashboard, Day plan, Weekly plan, What-if, Balance. |
+| Workload profile | user name, email, load points per weighted hour, overload threshold. | Workload calculation and Me settings. |
+| What-if plan | title, date range, current load, projected load, load adjustments, dominant load dimension, recommendation. | What-if saved scenarios and demo flow. |
+| Journal entry | date, mood, note, stress signal, reflection. | Journal, stress review history, Lumi Care. |
+| Balance move | task id, move/drop/keep decision, source week, target week, relocated points. | Balance and task history. |
+
+### Technical decisions and trade-offs
+
+| Decision | Why it was chosen | Trade-off |
+|---|---|---|
+| localStorage for prototype data | Fastest way to produce a working live demo without spending time on backend setup. | Data is device/browser-specific and not shared across users. |
+| Shared workload logic | Prevents inconsistent numbers across Dashboard, Tasks, What-if, and Balance. | Requires all pages to follow the same task model. |
+| Week-based workload | Matches how students experience overload across deadlines and commitments. | Some single-day stress may need extra daily detail, handled by Day plan. |
+| User-confirmed AI plan | Keeps the app supportive instead of controlling. | Adds one extra confirmation step. |
+| Date range for tasks | More realistic for assignments that take several days. | Requires day/week logic to handle overlapping dates carefully. |
+| Gemini through API route | Keeps AI responses available for chat, boundary replies, and reflection. | Needs API key handling and future safety checks. |
+
+### Feasibility risk and mitigation
+
+| Risk | Why it matters | Mitigation |
+|---|---|---|
+| Workload score may feel subjective. | Stress differs by student. | Let users set load preferences and override priority. |
+| AI suggestions may be wrong. | Bad advice can reduce trust. | AI suggestions require confirmation and should be framed as support, not orders. |
+| No backend in prototype. | Judges may wonder whether it can scale. | README explains localStorage as prototype storage and Firebase/Supabase as future database path. |
+| Too many features may confuse the demo. | Reviewers have limited time. | Demo flow focuses on Tasks -> Dashboard -> What-if -> Balance -> Care. |
+| Emotional support could sound like therapy. | The app should not claim to replace professional help. | Position Lumi as stress support and planning companion, not a therapist. |
+| Calendar integration may be complex. | Future feature needs permissions and sync logic. | Keep it as future plan after core workflow is validated. |
 
 ### Workload calculation approach
 
@@ -611,14 +716,139 @@ Before final submission:
 
 Deadline: 13 September 2026, 11:59 PM.
 
-## 14. Setup
+## 14. Rubric Coverage Map
+
+| Rubric area | Evidence in this README |
+|---|---|
+| Visual diagrams and mindmaps | Editable draw.io mindmap, HTML preview, Mermaid mindmap, problem tree, and user flow. |
+| Iteration and idea evolution | Full iteration table showing pivots from general stress app to workload-aware planner. |
+| Mentor consultation | Mentor feedback table with specific feedback and what changed. |
+| Breadth of exploration | Ideas considered table plus dropped/reduced directions. |
+| Creativity and novelty | What-if sandbox, shared workload logic, Balance, and Lumi Care explained as differentiators. |
+| Differentiation | Comparison against to-do lists, calendars, wellness chatbots, and focus timers. |
+| Feasibility | Tech stack, architecture, data model, trade-offs, risks, and build scope. |
+| Design | Prototype flow, screen list, UX rationale, and visual direction. |
+| Impact | Target users, before/after table, scalability, and university partnership plan. |
+| Presentation | Video outline and full script. |
+
+## 15. Appendix: Feature Rationale in Short Mindmap Format
+
+### Planning + task management
+
+KEPT  
+To-do list  
+Why: tasks are the input for calculating workload.
+
+KEPT  
+Add task form  
+Why: lets users enter the details needed to calculate load.
+
+KEPT  
+Day plan  
+Why: shows what work is active on a selected day.
+
+KEPT  
+Weekly plan  
+Why: shows how workload builds across the week.
+
+KEPT  
+Reminder  
+Why: turns the plan into action before the task starts.
+
+KEPT  
+Edit / reschedule  
+Why: users need control if the app's suggested plan feels wrong.
+
+### Workload awareness
+
+KEPT  
+Workload calculation  
+Why: turns tasks into a clear load score.
+
+KEPT  
+Dashboard  
+Why: gives one quick answer: how heavy is this week?
+
+KEPT  
+Stress review history  
+Why: lets users look back at repeated stress patterns.
+
+### Decision support
+
+KEPT  
+What-if  
+Why: shows the cost before the user says yes.
+
+KEPT  
+Balance  
+Why: helps users move, keep, or drop tasks when the week is too full.
+
+KEPT  
+AI auto plan  
+Why: suggests a lighter plan while still letting the user confirm.
+
+### Emotional support
+
+KEPT  
+Lumi chatbot  
+Why: gives quick support when the user feels stuck or overloaded.
+
+KEPT  
+Journal  
+Why: helps analyze mood, stress source, and pressure patterns.
+
+KEPT  
+Recovery actions  
+Why: gives quick reset tools when stress is high.
+
+KEPT  
+Reflect  
+Why: helps users understand what is causing the pressure.
+
+KEPT  
+Boundary  
+Why: helps users say no or ask to move something calmly.
+
+### Social support
+
+REDUCED  
+Community  
+Why: peer support is useful, but secondary to workload planning.
+
+### Dropped examples
+
+DROPPED  
+Mood-only tracker  
+Why: records emotion, but does not help reduce workload.
+
+DROPPED  
+Pomodoro timer  
+Why: helps focus, but does not show overload.
+
+DROPPED  
+Anonymous confession wall  
+Why: gives emotional release, but could become unfocused and hard to moderate.
+
+DROPPED  
+Reward shop / points system  
+Why: feels game-like but does not solve capacity planning.
+
+DROPPED  
+Study group matching  
+Why: useful academically, but not directly connected to workload balance.
+
+DROPPED  
+AI therapist chatbot  
+Why: too risky and too broad; LoadLight supports stress but does not replace professional help.
+
+## 16. Setup
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 15. Repository Notes
+## 17. Repository Notes
 
 The prototype uses shared workload logic so Home, Tasks, What-if, and Balance should not hardcode separate load values.
 
