@@ -1,0 +1,101 @@
+<mxfile host="app.diagrams.net" modified="2026-09-13T00:00:00.000Z" agent="LoadLight" version="24.7.17">
+  <diagram name="Team Ideation Mindmap" id="loadlight-team-ideation">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="center" value="Ideas We Considered&#xa;Team Ideation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#524783;strokeColor=#524783;fontColor=#ffffff;fontSize=24;fontStyle=1;arcSize=50;" vertex="1" parent="1">
+          <mxGeometry x="780" y="520" width="230" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="final" value="Final Chosen Direction&#xa;LoadLight: workload-aware planning + Lumi care" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d8f2df;strokeColor=#70b985;fontColor=#172033;fontSize=18;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="515" width="280" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" value="Person 1&#xa;Problem + emotional support ideas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe5d5;strokeColor=#f3a06d;fontColor=#172033;fontSize=17;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="120" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p1a" value="KEPT&#xa;Student overload problem&#xa;Why: specific to student life and matches stress/workload theme." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff6ef;strokeColor=#f3a06d;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="130" y="60" width="245" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p1b" value="MERGED&#xa;General stress manager&#xa;Why: too broad alone, but useful as emotional support layer." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff6ef;strokeColor=#f3a06d;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="120" y="180" width="255" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p1c" value="KEPT&#xa;Lumi mascot&#xa;Why: makes workload feedback warmer and less scary." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff6ef;strokeColor=#f3a06d;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="145" y="300" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" value="Person 2&#xa;Planning + task ideas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eee6ff;strokeColor=#aa91e6;fontColor=#172033;fontSize=17;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="420" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p2a" value="KEPT&#xa;Dashboard&#xa;Why: gives one quick answer: how heavy is this week?" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4ff;strokeColor=#aa91e6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="130" y="390" width="235" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p2b" value="MERGED&#xa;To-do list&#xa;Why: plain list is generic, so tasks became workload inputs." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4ff;strokeColor=#aa91e6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="110" y="515" width="255" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p2c" value="KEPT&#xa;Day plan + weekly plan&#xa;Why: users need daily focus and weekly capacity view." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f4ff;strokeColor=#aa91e6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="130" y="640" width="245" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" value="Person 3&#xa;Decision + overload ideas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcf7f7;strokeColor=#6ecfd3;fontColor=#172033;fontSize=17;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="790" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p3a" value="KEPT&#xa;What-if sandbox&#xa;Why: prevents overload before accepting new work." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#effcfc;strokeColor=#6ecfd3;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="120" y="780" width="245" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p3b" value="KEPT&#xa;Balance flow&#xa;Why: overload needs action: move, keep, or drop." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#effcfc;strokeColor=#6ecfd3;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="115" y="905" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p3c" value="DROPPED&#xa;Auto-fix everything&#xa;Why: too controlling; user must confirm AI plan." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8dce2;strokeColor=#b25c69;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="135" y="1030" width="245" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" value="Person 4&#xa;Care + reflection ideas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e4f4de;strokeColor=#9bd18b;fontColor=#172033;fontSize=17;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="670" y="960" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p4a" value="KEPT&#xa;Journal stress analysis&#xa;Why: users need mood, stress source, comfort, and next step suggestions." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3fbef;strokeColor=#9bd18b;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="455" y="1085" width="260" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="p4b" value="KEPT&#xa;Boundary replies&#xa;Why: saying no is part of workload protection." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3fbef;strokeColor=#9bd18b;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="750" y="1085" width="245" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p4c" value="KEPT&#xa;Recovery tools&#xa;Why: quick reset actions help when stress is immediate." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3fbef;strokeColor=#9bd18b;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="1085" width="245" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" value="KEPT&#xa;Shared workload logic&#xa;Why: Dashboard, Tasks, What-if, and Balance must show consistent numbers." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef9f1;strokeColor=#70b985;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="275" width="270" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" value="KEPT&#xa;Task form&#xa;Why: workload needs clear inputs: title, category, start date, due date, time, priority, reminder." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef9f1;strokeColor=#70b985;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="420" width="270" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" value="KEPT&#xa;What-if + Balance&#xa;Why: one prevents overload, the other repairs overload." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef9f1;strokeColor=#70b985;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="575" width="270" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" value="KEPT&#xa;Lumi Care&#xa;Why: overload is emotional too, so planning needs comfort, reflection, and boundaries." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef9f1;strokeColor=#70b985;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="720" width="270" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="f5" value="DROPPED AS SEPARATE IDEAS&#xa;Pure to-do list / pure calendar / pure chatbot&#xa;Why: each solved only one part. Final app merges planning, prediction, and care." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8dce2;strokeColor=#b25c69;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1540" y="875" width="285" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#f3a06d;strokeWidth=3;endArrow=none;" edge="1" parent="1" source="p1" target="center"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#aa91e6;strokeWidth=3;endArrow=none;" edge="1" parent="1" source="p2" target="center"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6ecfd3;strokeWidth=3;endArrow=none;" edge="1" parent="1" source="p3" target="center"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9bd18b;strokeWidth=3;endArrow=none;" edge="1" parent="1" source="p4" target="center"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#70b985;strokeWidth=3;endArrow=none;" edge="1" parent="1" source="center" target="final"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p1e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#f3a06d;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p1" target="p1a"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p1e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#f3a06d;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p1" target="p1b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p1e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#f3a06d;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p1" target="p1c"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p2e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#aa91e6;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p2" target="p2a"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p2e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#aa91e6;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p2" target="p2b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p2e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#aa91e6;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p2" target="p2c"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p3e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6ecfd3;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p3" target="p3a"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p3e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6ecfd3;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p3" target="p3b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p3e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#b25c69;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p3" target="p3c"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p4e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9bd18b;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p4" target="p4a"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p4e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9bd18b;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p4" target="p4b"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="p4e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9bd18b;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="p4" target="p4c"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#70b985;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="final" target="f1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#70b985;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="final" target="f2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#70b985;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="final" target="f3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#70b985;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="final" target="f4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="fe5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#b25c69;strokeWidth=2;endArrow=none;" edge="1" parent="1" source="final" target="f5"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
