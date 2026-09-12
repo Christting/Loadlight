@@ -19,6 +19,27 @@ export function dailyTaskLoad(tasks: Task[]): number {
   return tasks.reduce((total, task) => total + taskLoadPoints(task), 0);
 }
 
+function taskStartDate(task: Task): string {
+  return task.scheduledDate || task.date || DEFAULT_WORKLOAD_WEEK_ANCHOR;
+}
+
+function taskEndDate(task: Task): string {
+  const start = taskStartDate(task);
+  const end = task.date || start;
+  return end < start ? start : end;
+}
+
+export function taskSpanDays(task: Task): number {
+  const start = taskStartDate(task);
+  const end = taskEndDate(task);
+  const days = Math.round((Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / (1000 * 60 * 60 * 24));
+  return Math.max(1, days + 1);
+}
+
+export function taskDailyLoadPoints(task: Task): number {
+  return Math.max(1, Math.round(taskLoadPoints(task) / taskSpanDays(task)));
+}
+
 // Personal plan items don't have a demand rating, so they're weighted as
 // "medium" — same scale as a task, just without a heavy/light distinction.
 export function planItemDurationHours(item: PlanItem): number {
@@ -63,16 +84,9 @@ export function workloadWeekRange(activeDate: string) {
   return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
 }
 
-function isInWeek(date: string, activeDate: string) {
-  if (!date) return true;
-  const { start, end } = workloadWeekRange(activeDate);
-  return date >= start && date <= end;
-}
-
 export function taskBelongsToWeek(task: Task, anchorDate: string) {
   const { start, end } = workloadWeekRange(anchorDate);
-  if (task.weekStart && task.weekEnd) return task.weekStart === start && task.weekEnd === end;
-  return isInWeek(task.scheduledDate || task.date || anchorDate, anchorDate);
+  return taskStartDate(task) <= end && taskEndDate(task) >= start;
 }
 
 export function activeWeekTasks(tasks: Task[], weekAnchor: string = DEFAULT_WORKLOAD_WEEK_ANCHOR): Task[] {
@@ -84,6 +98,17 @@ export function activeWeekTasks(tasks: Task[], weekAnchor: string = DEFAULT_WORK
 
 export function activeWeekTaskLoad(tasks: Task[], weekAnchor: string = DEFAULT_WORKLOAD_WEEK_ANCHOR): number {
   return dailyTaskLoad(activeWeekTasks(tasks, weekAnchor));
+}
+
+export function activeDayTasks(tasks: Task[], dayISO: string): Task[] {
+  return tasks.filter((task) => {
+    if (task.status === 'done' || task.status === 'skipped') return false;
+    return dayISO >= taskStartDate(task) && dayISO <= taskEndDate(task);
+  });
+}
+
+export function activeDayTaskLoad(tasks: Task[], dayISO: string): number {
+  return activeDayTasks(tasks, dayISO).reduce((total, task) => total + taskDailyLoadPoints(task), 0);
 }
 
 // --- Smart Priority ---------------------------------------------------

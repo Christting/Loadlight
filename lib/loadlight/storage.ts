@@ -1,22 +1,24 @@
-import { thursdayTasks } from './demo-data';
+import { demoWeekTasks } from './demo-data';
 import { DEFAULT_WORKLOAD_WEEK_ANCHOR, workloadWeekRange } from './load-logic';
 import type { StoredLoadLightState } from './types';
 
-export const STORAGE_KEY = 'loadlight.prototype.v4';
-const LEGACY_STORAGE_KEYS = ['loadlight.prototype.v1', 'loadlight.prototype.v2', 'loadlight.prototype.v3'];
+export const STORAGE_KEY = 'loadlight.prototype.v8';
+const LEGACY_STORAGE_KEYS = ['loadlight.prototype.v1', 'loadlight.prototype.v2', 'loadlight.prototype.v3', 'loadlight.prototype.v4', 'loadlight.prototype.v5', 'loadlight.prototype.v6', 'loadlight.prototype.v7'];
 
 const defaultWeek = workloadWeekRange(DEFAULT_WORKLOAD_WEEK_ANCHOR);
 
-const defaultTasks = thursdayTasks.map((task) => ({
+const defaultTasks = demoWeekTasks.map((task) => ({
   ...task,
+  scheduledDate: task.scheduledDate ?? task.date ?? DEFAULT_WORKLOAD_WEEK_ANCHOR,
   weekStart: task.weekStart ?? defaultWeek.start,
   weekEnd: task.weekEnd ?? defaultWeek.end,
   status: 'not-started' as const,
 }));
 
-function normalizeTaskWeek<T extends { scheduledDate?: string; weekStart?: string; weekEnd?: string }>(task: T): T {
-  const week = workloadWeekRange(task.scheduledDate || DEFAULT_WORKLOAD_WEEK_ANCHOR);
-  return { ...task, weekStart: week.start, weekEnd: week.end };
+function normalizeTaskWeek<T extends { date?: string; scheduledDate?: string; weekStart?: string; weekEnd?: string }>(task: T): T {
+  const scheduledDate = task.scheduledDate || task.date || DEFAULT_WORKLOAD_WEEK_ANCHOR;
+  const week = workloadWeekRange(scheduledDate);
+  return { ...task, scheduledDate, weekStart: week.start, weekEnd: week.end };
 }
 
 export const defaultStoredState: StoredLoadLightState = {
