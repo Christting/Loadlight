@@ -11,10 +11,10 @@ import { Lumi } from '@/components/loadlight/Lumi';
 import { SupportChat } from '@/components/loadlight/SupportChat';
 import { TasksView } from '@/components/loadlight/TasksView';
 import { WhatIfView } from '@/components/loadlight/WhatIfView';
-import { timelineLabels, todayFiveLoads, weekPlan } from '@/lib/loadlight/demo-data';
-import { activeWeekTaskLoad, activeWeekTasks } from '@/lib/loadlight/load-logic';
+import { timelineLabels } from '@/lib/loadlight/demo-data';
+import { activeDayTaskLoad, activeWeekTaskLoad, activeWeekTasks, addDaysISO, taskLoadPoints, workloadWeekRange } from '@/lib/loadlight/load-logic';
 import { defaultStoredState, loadStoredState, saveStoredState } from '@/lib/loadlight/storage';
-import type { AppView, CheckInMood, JournalEntry, StoredLoadLightState } from '@/lib/loadlight/types';
+import type { AppView, CheckInMood, JournalEntry, LoadDimension, StoredLoadLightState, Task } from '@/lib/loadlight/types';
 
 const loadRows = [
   { key: 'mental', label: 'Mental', mark: 'M', tone: 'lavender' },
@@ -32,7 +32,14 @@ const moodOptions: Array<{ value: CheckInMood; label: string }> = [
 
 const journalTagOptions = ['Class', 'Work', 'Family', 'Rest', 'Deadline', 'Small win'];
 
-const weeklyLumiStates = ['calm', 'steady', 'tired', 'stressed', 'sleepy', 'recovering', 'relieved'] as const;
+const categoryLoadFallback: Record<Task['category'], LoadDimension> = {
+  academic: 'mental',
+  work: 'time',
+  social: 'social',
+  personal: 'errands',
+  wellbeing: 'physical',
+  other: 'time',
+};
 
 const navItems = [
   { id: 'home' as const, label: 'Home', icon: Home },
@@ -113,7 +120,41 @@ function DashboardLoadingView() {
   </section><aside className="desktop-note" aria-hidden="true"><span>✦</span><p><strong>LoadLight</strong><small>Lighten your load.</small></p></aside></main>;
 }
 
-function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal, onConsumeCompose }: { currentLoad: number; stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onNavigate: (view: AppView) => void; composeSignal: number; onConsumeCompose: () => void }) {
+function todayISO(): string {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+}
+
+function todayDisplayLabel(): string {
+  return new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+}
+
+function calculateLoadBreakdown(tasks: Task[]): Record<LoadDimension, number> {
+  const totals: Record<LoadDimension, number> = { mental: 0, time: 0, physical: 0, social: 0, errands: 0 };
+  tasks.forEach((task) => {
+    const points = taskLoadPoints(task);
+    const mixEntries = Object.entries(task.loadMix ?? {}) as Array<[LoadDimension, number]>;
+    if (mixEntries.length) {
+      mixEntries.forEach(([dimension, share]) => {
+        totals[dimension] += Math.round(points * share);
+      });
+      return;
+    }
+    totals[categoryLoadFallback[task.category]] += points;
+  });
+  return totals;
+}
+
+function loadMood(load: number): CheckInMood {
+  if (load >= 100) return 'overwhelmed';
+  if (load >= 85) return 'stressed';
+  if (load >= 65) return 'tired';
+  if (load >= 35) return 'steady';
+  return 'calm';
+}
+
+function HomeView({ currentLoad, currentWeekAnchor, stored, onSave, onNavigate, composeSignal, onConsumeCompose }: { currentLoad: number; currentWeekAnchor: string; stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; onNavigate: (view: AppView) => void; composeSignal: number; onConsumeCompose: () => void }) {
   const [selectedMood, setSelectedMood] = useState<CheckInMood>(stored.selectedMood ?? 'steady');
   const [pendingJournalMood, setPendingJournalMood] = useState<CheckInMood | null>(null);
   const [customJournalMood, setCustomJournalMood] = useState('');
@@ -183,7 +224,20 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal, onCo
     onSave({ ...stored, selectedMood, journalEntries: [entry, ...stored.journalEntries].slice(0, 12) }, 'Check-in and journal saved on this device.');
     setJournalTitle(''); setJournalNote(''); setSpeechText(''); setPhotoDataUrl(''); setPendingJournalMood(null); setCustomJournalMood(''); setCustomMoodOpen(false); setJournalStep('mood'); setJournalPageOpen(false);
   }
-  const todayTaskPreview = activeWeekTasks(stored.tasks ?? []).slice(0, 4);
+  const selectedWeekTasks = activeWeekTasks(stored.tasks ?? [], currentWeekAnchor);
+  const todayTaskPreview = [...selectedWeekTasks].sort((a, b) => taskLoadPoints(b) - taskLoadPoints(a)).slice(0, 4);
+  const loadBreakdown = calculateLoadBreakdown(selectedWeekTasks);
+  const selectedWeek = workloadWeekRange(currentWeekAnchor);
+  const selectedWeekPlan = Array.from({ length: 7 }, (_, index) => {
+    const date = addDaysISO(selectedWeek.start, index);
+    const load = activeDayTaskLoad(stored.tasks ?? [], date);
+    return {
+      date,
+      dayLabel: new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`)),
+      load,
+      mood: loadMood(load),
+    };
+  });
   const historyCount = stored.journalEntries.length;
   const fallbackJournalHistory: JournalEntry[] = [
     { id: 'demo-note-1', date: 'Monday, 1 September', moodLabel: 'Calm', title: 'A softer start', note: 'I had space between classes and it helped me breathe.' },
@@ -213,7 +267,7 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal, onCo
 
   return <div className="view-content home-view">
     <Header label="GOOD AFTERNOON" title="Hi, Mia." />
-    <p className="home-intro">{timelineLabels.today}</p>
+    <p className="home-intro">{todayDisplayLabel()}</p>
 
     <div className="home-carousel-wrap">
       <Button type="button" variant="ghost" size="icon" className="carousel-arrow carousel-arrow-left" aria-label="Previous card" onClick={() => moveCards('left')}><ArrowLeft /></Button>
@@ -246,17 +300,17 @@ function HomeView({ currentLoad, stored, onSave, onNavigate, composeSignal, onCo
     </div>
 
     <section className="editorial-section five-loads" aria-labelledby="five-loads-title">
-      <div className="section-title"><div><h2 id="five-loads-title">What’s taking the most space today</h2></div></div>
-      <div className="load-list">{loadRows.map((row) => { const value = todayFiveLoads[row.key]; return <div className="load-row" key={row.key}>
+      <div className="section-title"><div><h2 id="five-loads-title">What’s taking the most space this week</h2></div></div>
+      <div className="load-list">{loadRows.map((row) => { const value = Math.round(loadBreakdown[row.key]); return <div className="load-row" key={row.key}>
         <span className={`load-mark ${row.tone}`} aria-hidden="true">{row.mark}</span><span>{row.label}</span>
-        <div className="thin-track" role="progressbar" aria-label={`${row.label} load`} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${value}%` }} /></div><strong>{value}%</strong>
+        <div className="thin-track" role="progressbar" aria-label={`${row.label} load`} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${Math.min(100, value)}%` }} /></div><strong>{value} pts</strong>
       </div>; })}</div>
     </section>
 
     <section className="editorial-section week-section" aria-labelledby="week-title">
       <div className="section-title"><div><span className="diary-accent">This week</span><h2 id="week-title">A few little moments</h2></div></div>
-      <div className="mood-timeline">{weekPlan.map((day, index) => <div key={`${day.dayLabel}-${index}`} className={day.dayLabel === 'Tue' ? 'today' : ''}><span>{day.dayLabel}</span><Lumi state={weeklyLumiStates[index]} size="small" />{(day.dayLabel === 'Wed' || day.dayLabel === 'Thu') ? <small>{day.load}%</small> : <small aria-hidden="true">&nbsp;</small>}</div>)}</div>
-      <p>Things begin feeling heavier on Wednesday.</p><button className="text-link" type="button" onClick={() => setReplayOpen(true)}>Replay my week <ArrowRight /></button>
+      <div className="mood-timeline">{selectedWeekPlan.map((day) => <div key={day.date} className={day.date === currentWeekAnchor ? 'today' : ''}><span>{day.dayLabel}</span><Lumi state={day.mood} size="small" />{day.load ? <small>{day.load}%</small> : <small aria-hidden="true">&nbsp;</small>}</div>)}</div>
+      <p>{currentLoad >= 100 ? 'This week is overloaded. Balance can help move the pressure.' : currentLoad >= 85 ? 'This week is getting close to the limit.' : 'This week still has some room.'}</p><button className="text-link" type="button" onClick={() => setReplayOpen(true)}>Replay my week <ArrowRight /></button>
     </section>
 
     <section className="insight-strip"><Lumi state="thinking" size="small" /><div><p className="companion-label">Lumi noticed something</p><strong>Your busiest days seem to happen when study deadlines + work shifts overlap.</strong><button className="text-link" type="button" onClick={() => setInsightOpen(true)}>See what Lumi noticed <ArrowRight /></button></div></section>
@@ -419,6 +473,8 @@ export default function LoadLightApp() {
   const [toast, setToast] = useState('');
   const [demoOpen, setDemoOpen] = useState(false);
   const [demoStep, setDemoStep] = useState(0);
+  const currentWeekAnchor = todayISO();
+  const [selectedWeekAnchor, setSelectedWeekAnchor] = useState(currentWeekAnchor);
   useEffect(() => { setStored(loadStoredState()); setHydrated(true); }, []);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -437,7 +493,7 @@ export default function LoadLightApp() {
   function login(email: string) { setView('home'); setEnteringDashboard(true); persist({ ...stored, isLoggedIn: true, email }, 'Welcome back, Mia.'); }
   function logout() { setEnteringDashboard(false); persist({ ...stored, isLoggedIn: false }, 'You’re safely logged out.'); setView('home'); }
   function composeToday() { setView('home'); setComposeSignal((signal) => signal + 1); }
-  const currentLoadPercent = Math.min(120, Math.round(activeWeekTaskLoad(stored.tasks ?? [])));
+  const currentLoadPercent = Math.min(120, Math.round(activeWeekTaskLoad(stored.tasks ?? [], currentWeekAnchor)));
   function startDemo() { setDemoOpen(true); setDemoStep(0); setView(demoSteps[0].view); }
   function nextDemoStep() {
     if (demoStep >= demoSteps.length - 1) {
@@ -455,7 +511,7 @@ export default function LoadLightApp() {
   if (enteringDashboard) return <DashboardLoadingView />;
   return <main className="app-shell"><section className={`phone-frame ${view === 'balance' ? '' : 'with-app-topbar'}`} aria-label="LoadLight student workload manager">
     {view !== 'balance' && <AppTopBar title={topBarTitles[view]} onCompose={composeToday} showCompose={view === 'home'} />}
-    {view === 'home' && <HomeView currentLoad={currentLoadPercent} stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} onConsumeCompose={() => setComposeSignal(0)} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} />}{view === 'what-if' && <WhatIfView currentLoad={currentLoadPercent} stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView stored={stored} onSave={persist} />}{view === 'me' && <MeView stored={stored} onSave={persist} onLogout={logout} />}
+    {view === 'home' && <HomeView currentLoad={currentLoadPercent} currentWeekAnchor={currentWeekAnchor} stored={stored} onSave={persist} onNavigate={setView} composeSignal={composeSignal} onConsumeCompose={() => setComposeSignal(0)} />}{view === 'tasks' && <TasksView stored={stored} onSave={persist} selectedWeekAnchor={selectedWeekAnchor} onSelectedWeekChange={setSelectedWeekAnchor} />}{view === 'what-if' && <WhatIfView currentLoad={currentLoadPercent} stored={stored} onSave={persist} />}{view === 'balance' && <BalanceView stored={stored} onSave={persist} selectedWeekAnchor={selectedWeekAnchor} onSelectedWeekChange={setSelectedWeekAnchor} />}{view === 'me' && <MeView stored={stored} onSave={persist} onLogout={logout} />}
     <nav className="bottom-nav" aria-label="Primary navigation">{navItems.map(({ id, label, icon: Icon, featured }) => <Button key={id} variant="ghost" className={`${view === id ? 'active' : ''} ${featured ? 'featured' : ''}`} onClick={() => setView(id)} aria-current={view === id ? 'page' : undefined}><Icon /><span>{label}</span></Button>)}</nav>
     <SupportChat />
     {demoOpen && <DemoGuide activeStep={demoStep} onClose={() => setDemoOpen(false)} onNext={nextDemoStep} onStart={startDemo} />}

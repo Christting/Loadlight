@@ -8,7 +8,6 @@ import {
   activeWeekTasks,
   activeWeekTaskLoad,
   addDaysISO,
-  DEFAULT_WORKLOAD_WEEK_ANCHOR,
   taskLoadPoints,
   workloadWeekRange,
 } from '@/lib/loadlight/load-logic';
@@ -131,11 +130,10 @@ function balanceLoadCopy(load: number, loadLimit: number, scope: BalanceScope) {
   };
 }
 
-export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
+export function BalanceView({ stored, onSave, selectedWeekAnchor, onSelectedWeekChange }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; selectedWeekAnchor: string; onSelectedWeekChange: (anchor: string) => void }) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const balancePlanRef = useRef<HTMLElement | null>(null);
   const balanceScope: BalanceScope = 'week';
-  const [selectedWeekAnchor, setSelectedWeekAnchor] = useState(DEFAULT_WORKLOAD_WEEK_ANCHOR);
   const [balanceStarted, setBalanceStarted] = useState(false);
   const selectedWeek = workloadWeekRange(selectedWeekAnchor);
   const selectedWeekTasks = useMemo(() => activeWeekTasks(stored.tasks ?? [], selectedWeekAnchor), [stored.tasks, selectedWeekAnchor]);
@@ -228,7 +226,7 @@ export function BalanceView({ stored, onSave }: { stored: StoredLoadLightState; 
   }
 
   function choosePlanWeek(anchor: string) {
-    setSelectedWeekAnchor(anchor);
+    onSelectedWeekChange(anchor);
     setBalanceStarted(false);
     setShowAutoPlan(false);
   }

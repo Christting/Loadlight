@@ -103,7 +103,7 @@ function rangeLabel(start: string, end: string): string {
 
 // --- Component ------------------------------------------------------------
 
-export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
+export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekChange }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void; selectedWeekAnchor: string; onSelectedWeekChange: (anchor: string) => void }) {
   const tasks = stored.tasks ?? [];
   const defaultFormDate = useMemo(() => todayISO(), []);
   const [mode, setMode] = useState<'list' | 'day' | 'week'>('list');
@@ -116,7 +116,6 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
   const [dueDate, setDueDate] = useState(defaultFormDate);
   const [hours, setHours] = useState('');
   const [flexibility, setFlexibility] = useState<Flexibility>('flexible');
-  const [selectedWeekAnchor, setSelectedWeekAnchor] = useState(defaultFormDate);
   const [selectedDay, setSelectedDay] = useState(defaultFormDate);
   const pendingTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped');
   const closedTasks = tasks.filter((task) => task.status === 'done' || task.status === 'skipped');
@@ -176,7 +175,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
       autoScheduled: false,
     };
     onSave({ ...stored, tasks: [task, ...tasks] }, 'Task added.');
-    setSelectedWeekAnchor(startDate);
+    onSelectedWeekChange(startDate);
     setSelectedDay(startDate);
     resetForm();
     setFormOpen(false);
@@ -294,18 +293,18 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     points: activeDayTaskLoad(pendingTasks, date),
     count: activeDayTasks(pendingTasks, date).length,
   }));
-  const nextWeekAnchor = addDaysISO(DEFAULT_WORKLOAD_WEEK_ANCHOR, 7);
+  const nextWeekAnchor = addDaysISO(selectedWeek.start, 7);
   const nextWeekTasks = activeWeekTasks(pendingTasks, nextWeekAnchor);
   const nextWeekTaskPoints = nextWeekTasks.reduce((total, task) => total + taskLoadPoints(task), 0);
   function choosePlanWeek(anchor: string) {
     const week = workloadWeekRange(anchor);
-    setSelectedWeekAnchor(anchor);
+    onSelectedWeekChange(anchor);
     setSelectedDay(week.start);
   }
 
   function choosePlanDay(day: string) {
     setSelectedDay(day);
-    setSelectedWeekAnchor(day);
+    onSelectedWeekChange(day);
   }
 
   function renderWeekPicker() {
