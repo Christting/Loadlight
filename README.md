@@ -1,14 +1,52 @@
-# LoadLight by Team roti canAI
+<div align="center">
 
-Team: Mia, [Member 2], [Member 3], [Member 4]
+# LoadLight
 
-Problem Statement: Stress & Workload Manager
+### Make room to breathe.
 
-Video Presentation: TBD - unlisted YouTube link
+**A stress and workload manager for students who need to see capacity before saying yes.**
 
-Presentation Slides: TBD - public Canva link
+Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 
-Live Demo: TBD - deployed app link
+<br />
+
+![Status](https://img.shields.io/badge/status-prototype-524783)
+![Frontend](https://img.shields.io/badge/frontend-Next.js%20%2B%20React-f1d35f)
+![Storage](https://img.shields.io/badge/storage-localStorage-8dd2d4)
+![AI](https://img.shields.io/badge/AI-Lumi%20support-d8f2df)
+
+</div>
+
+---
+
+## Submission Links
+
+| Item | Link |
+|---|---|
+| Team | Team roti canAI |
+| Members | Mia, [Member 2], [Member 3], [Member 4] |
+| Problem statement | Stress & Workload Manager |
+| Live demo | TBD - deployed app link |
+| Video presentation | TBD - unlisted YouTube link |
+| Presentation slides | TBD - public Canva link |
+
+## Quick Navigation
+
+| Section | What reviewers can find |
+|---|---|
+| [1. Project Overview](#1-project-overview) | Problem, users, solution, feature set, design principles. |
+| [2. Ideation & Process](#2-ideation--process) | Ideas considered, mindmap links, mentor feedback. |
+| [3. Design & Prototype](#3-design--prototype) | End-to-end prototype flow and interaction details. |
+| [4. What Makes It Different](#4-what-makes-it-different) | Novelty and comparison with existing tools. |
+| [5. Technical Architecture & Feasibility](#5-technical-architecture--feasibility) | Stack, architecture, data model, risks, build scope. |
+| [6. Impact](#6-impact) | Target users, before/after value, scalability. |
+| [7. Demo Guide](#7-demo-guide) | Suggested flow for judges to try the app. |
+| [8. Video Outline](#8-video-outline) | Presentation structure and script. |
+| [14. Rubric Coverage Map](#14-rubric-coverage-map) | Where each scoring area is addressed. |
+
+> **Core idea:** LoadLight is not just a to-do list and not just a wellness app. It connects both: task planning, workload calculation, What-if forecasting, Balance repair, and Lumi Care.
+
+---
 
 ## 1. Project Overview
 
