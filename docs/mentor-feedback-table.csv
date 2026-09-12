@@ -1,0 +1,13 @@
+Date,Mentor / source,Feedback received,What was changed,Why it matters
+2026-09-12,"Mentor / handwritten review","Dashboard must make clear how workload is calculated.","Connected Dashboard load to actual tasks through shared workload logic.","Judges can see the score has a reason."
+2026-09-12,"Mentor / handwritten review","Dashboard should remain a core feature.","Kept Dashboard as the first warning screen.","It gives users a fast answer about current week load."
+2026-09-12,"Mentor / handwritten review","Balance should be used when the user is really overloaded.","Made Balance a week-based overload repair flow.","It prevents Balance from feeling like random task management."
+2026-09-12,"Mentor / handwritten review","Care should be used when the user feels really stressed and needs to manage it.","Grouped Recovery, Reflect, and Boundary under Care.","Emotional support is separate from task balancing."
+2026-09-12,"Mentor / handwritten review","Recovery should let users pick one reset.","Added small recovery tools such as breathing, wooden fish tapping, and bubble popping.","Recovery becomes immediate and actionable."
+2026-09-12,"Mentor / handwritten review","Reflect should help users revise or understand pressure.","Reflect asks one small question based on stress reason.","Users can identify whether they need rest, a boundary, or schedule changes."
+2026-09-12,"Mentor / handwritten review","Boundary should help users who do not know how to reject someone.","Boundary generates soft, firm, or short replies from a written situation.","Saying no becomes part of workload protection."
+2026-09-12,"Mentor / handwritten review","The app had too many pages and priorities.","Reduced feature emphasis and grouped care tools together.","The demo flow is clearer."
+2026-09-12,"Team feedback","If users dislike the app's suggested schedule, they should be able to reschedule.","Added Edit controls on To-do List, Day plan, and Weekly plan.","The app guides without taking control away."
+2026-09-12,"Team feedback","Users should be able to set reminders before tasks.","Added reminder selection during Add task and Edit task.","The plan becomes actionable."
+2026-09-12,"Team feedback","Workload numbers across pages must not conflict.","Shared calculation is used across Dashboard, Tasks, What-if, and Balance.","Consistent numbers build trust."
+2026-09-12,"Team feedback","Dashboard should mean current week, not whichever week the user last selected.","Dashboard current week is calculated from real current date.","On judging day, Dashboard automatically reflects that week."
