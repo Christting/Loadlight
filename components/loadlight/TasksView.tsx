@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, CheckCircle2, Circle, CircleDot, ListChecks, Plus, Trash2, Undo2, X } from 'lucide-react';
+import { Bell, Check, CheckCircle2, Circle, CircleDot, ListChecks, Pencil, Plus, Trash2, Undo2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
@@ -41,6 +41,12 @@ function categoryLabel(task: Task): string {
 }
 
 const durationQuickPicks = [0.5, 1, 2, 3, 4, 5];
+const reminderOptions = [
+  { value: '', label: 'No reminder' },
+  { value: '5', label: '5 min before' },
+  { value: '10', label: '10 min before' },
+  { value: '30', label: '30 min before' },
+];
 
 const priorityLabels: Record<TaskPriority, string> = { low: 'Low', medium: 'Medium', high: 'High' };
 
@@ -115,8 +121,19 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
   const [startDate, setStartDate] = useState(defaultFormDate);
   const [dueDate, setDueDate] = useState(defaultFormDate);
   const [hours, setHours] = useState('');
+  const [reminder, setReminder] = useState('');
   const [flexibility, setFlexibility] = useState<Flexibility>('flexible');
   const [selectedDay, setSelectedDay] = useState(defaultFormDate);
+  const [rescheduleTaskId, setRescheduleTaskId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCategory, setEditCategory] = useState<TaskCategory>('academic');
+  const [editCustomCategory, setEditCustomCategory] = useState('');
+  const [editStartDate, setEditStartDate] = useState(defaultFormDate);
+  const [editDueDate, setEditDueDate] = useState(defaultFormDate);
+  const [editHours, setEditHours] = useState('');
+  const [editFlexibility, setEditFlexibility] = useState<Flexibility>('flexible');
+  const [editReminder, setEditReminder] = useState('');
+  const [editPriority, setEditPriority] = useState<TaskPriority | ''>('');
   const pendingTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped');
   const closedTasks = tasks.filter((task) => task.status === 'done' || task.status === 'skipped');
   const load = useMemo(() => activeWeekTaskLoad(pendingTasks, selectedWeekAnchor), [pendingTasks, selectedWeekAnchor]);
@@ -148,6 +165,7 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
     setStartDate(defaultFormDate);
     setDueDate(defaultFormDate);
     setHours('');
+    setReminder('');
     setFlexibility('flexible');
   }
 
@@ -173,6 +191,7 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
       weekStart: taskWeek.start,
       weekEnd: taskWeek.end,
       autoScheduled: false,
+      reminderMinutesBefore: reminder ? Number(reminder) : undefined,
     };
     onSave({ ...stored, tasks: [task, ...tasks] }, 'Task added.');
     onSelectedWeekChange(startDate);
@@ -214,6 +233,86 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
     );
   }
 
+  function openTaskEdit(task: Task) {
+    const plannedDate = task.scheduledDate || task.date || defaultFormDate;
+    setRescheduleTaskId(task.id);
+    setEditTitle(task.title);
+    setEditCategory(task.category);
+    setEditCustomCategory(task.customCategory ?? '');
+    setEditStartDate(plannedDate);
+    setEditDueDate(task.date || plannedDate);
+    setEditHours(String(task.durationHours));
+    setEditFlexibility(task.flexibility);
+    setEditReminder(task.reminderMinutesBefore ? String(task.reminderMinutesBefore) : '');
+    setEditPriority(task.priorityOverride ?? '');
+  }
+
+  function saveTaskEdit(task: Task) {
+    const parsedHours = Number(editHours);
+    if (!editTitle.trim() || !parsedHours || parsedHours <= 0) return;
+    const nextStart = editStartDate || task.scheduledDate || task.date || defaultFormDate;
+    const nextDue = editDueDate && editDueDate >= nextStart ? editDueDate : nextStart;
+    const nextWeek = workloadWeekRange(nextStart);
+    onSave({
+      ...stored,
+      tasks: tasks.map((item) => item.id === task.id ? {
+        ...item,
+        title: editTitle.trim(),
+        category: editCategory,
+        customCategory: editCategory === 'other' ? editCustomCategory.trim() : undefined,
+        scheduledDate: nextStart,
+        date: nextDue,
+        durationHours: parsedHours,
+        demand: demandFromHours(parsedHours),
+        flexibility: editFlexibility,
+        weekStart: nextWeek.start,
+        weekEnd: nextWeek.end,
+        reminderMinutesBefore: editReminder ? Number(editReminder) : undefined,
+        priorityOverride: editPriority || undefined,
+        autoScheduled: false,
+      } : item),
+    }, 'Task updated.');
+    onSelectedWeekChange(nextStart);
+    setSelectedDay(nextStart);
+    setRescheduleTaskId(null);
+  }
+
+  function renderTaskEditPanel(task: Task, className = '') {
+    return <div className={`reschedule-panel task-edit-panel ${className}`}>
+      <label className="edit-full">Title<Input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} aria-label={`Title for ${task.title}`} /></label>
+      <label>Category<NativeSelect value={editCategory} onChange={(event) => setEditCategory(event.target.value as TaskCategory)} aria-label={`Category for ${task.title}`}>
+        {categoryOptions.map((option) => <NativeSelectOption key={option.value} value={option.value}>{option.label}</NativeSelectOption>)}
+      </NativeSelect></label>
+      <label>Estimate (hours)<Input type="number" min="0" step="0.25" value={editHours} onChange={(event) => setEditHours(event.target.value)} aria-label={`Estimated hours for ${task.title}`} /></label>
+      {editCategory === 'other' && <label className="edit-full">Custom category<Input value={editCustomCategory} onChange={(event) => setEditCustomCategory(event.target.value)} aria-label={`Custom category for ${task.title}`} /></label>}
+      <label>Plan day<Input type="date" value={editStartDate} onChange={(event) => { const nextStart = event.target.value; setEditStartDate(nextStart); if (editDueDate && editDueDate < nextStart) setEditDueDate(nextStart); }} aria-label={`Plan day for ${task.title}`} /></label>
+      <label>Due date<Input type="date" value={editDueDate} min={editStartDate} onChange={(event) => setEditDueDate(event.target.value)} aria-label={`Due date for ${task.title}`} /></label>
+      <label>Reminder<NativeSelect value={editReminder} onChange={(event) => setEditReminder(event.target.value)} aria-label={`Reminder for ${task.title}`}>{reminderOptions.map((option) => <NativeSelectOption key={option.value || 'none'} value={option.value}>{option.label}</NativeSelectOption>)}</NativeSelect></label>
+      <label>Priority<NativeSelect value={editPriority} onChange={(event) => setEditPriority(event.target.value as TaskPriority | '')} aria-label={`Priority for ${task.title}`}>
+        <NativeSelectOption value="">Use system priority</NativeSelectOption><NativeSelectOption value="low">Low</NativeSelectOption><NativeSelectOption value="medium">Medium</NativeSelectOption><NativeSelectOption value="high">High</NativeSelectOption>
+      </NativeSelect></label>
+      <fieldset className="edit-full edit-flex-field"><legend>Can this be rescheduled?</legend><label><input type="radio" name={`edit-flex-${task.id}`} checked={editFlexibility === 'flexible'} onChange={() => setEditFlexibility('flexible')} /> Flexible</label><label><input type="radio" name={`edit-flex-${task.id}`} checked={editFlexibility === 'fixed'} onChange={() => setEditFlexibility('fixed')} /> Fixed</label></fieldset>
+      <div className="reschedule-actions"><Button type="button" variant="outline" onClick={() => setRescheduleTaskId(null)}>Cancel</Button><Button type="button" className="primary-action" onClick={() => saveTaskEdit(task)}><Check /> Save</Button></div>
+    </div>;
+  }
+
+  function renderPlanTaskCard(task: Task, pointLabel: string, moved = false) {
+    const priority = computeSmartPriority(task, tasks);
+    const isEditing = rescheduleTaskId === task.id;
+    return (
+      <article className={`weekly-task-card${moved ? ' moved' : ''}`} key={task.id}>
+        <div>
+          <strong>{task.title}</strong>
+          <span>{moved ? 'Moved to next week · ' : ''}{categoryLabel(task)} · {task.durationHours}h total · {priorityLabels[priority]} priority</span>
+          {task.reminderMinutesBefore && <small className="task-reminder-note"><Bell /> Reminder {task.reminderMinutesBefore} min before</small>}
+        </div>
+        <b>{pointLabel}</b>
+        {!moved && <button className="reschedule-btn" type="button" onClick={() => openTaskEdit(task)}><Pencil /> Edit</button>}
+        {isEditing && renderTaskEditPanel(task)}
+      </article>
+    );
+  }
+
   function renderTaskRow(task: Task, closed: boolean) {
     const status = task.status ?? 'not-started';
     const StatusIcon = statusIcon(status);
@@ -241,6 +340,7 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
           <p className="task-field"><span className="field-label">Estimated time</span>{task.durationHours}h</p>
           <p className="task-field"><span className="field-label">Start date</span>{task.scheduledDate || 'No start set'}</p>
           <p className="task-field"><span className="field-label">Due date</span>{task.date || 'No date set'}</p>
+          <p className="task-field"><span className="field-label">Reminder</span>{task.reminderMinutesBefore ? `${task.reminderMinutesBefore} min before` : 'None'}</p>
           <p className="task-field"><span className="field-label">Workload</span>{taskLoadPoints(task)} points </p>
           {!closed && (
             <div className="task-priority-row">
@@ -267,6 +367,11 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
               <Check /> Complete
             </button>
           )}
+          {!closed && (
+            <button type="button" className="text-action-btn" onClick={() => openTaskEdit(task)}>
+              <Pencil /> Edit
+            </button>
+          )}
           {closed && (
             <>
               <span className={`completed-label${isDropped ? ' dropped' : ''}`}>{closedLabel}</span>
@@ -276,6 +381,7 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
             </>
           )}
         </div>
+        {!closed && rescheduleTaskId === task.id && renderTaskEditPanel(task, 'task-row-reschedule')}
       </article>
     );
   }
@@ -454,6 +560,13 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
                 </label>
               </fieldset>
 
+              <fieldset className="task-form-fieldset">
+                <legend>Reminder</legend>
+                <NativeSelect value={reminder} onChange={(event) => setReminder(event.target.value)} aria-label="Task reminder">
+                  {reminderOptions.map((option) => <NativeSelectOption key={option.value || 'none'} value={option.value}>{option.label}</NativeSelectOption>)}
+                </NativeSelect>
+              </fieldset>
+
               {draftTaskLoad > 0 && (
                 <div className={`task-load-preview ${loadStatusTone(draftLoadPercent)}`}>
                   <span>Auto load estimate</span>
@@ -521,18 +634,7 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
             <p>{dayTasks.length} task{dayTasks.length === 1 ? '' : 's'} active on {compactDateLabel(selectedDay)}. Multi-day tasks are spread across their date range.</p>
           </div>
           <div className="weekly-task-plan">
-            {dayTasks.length ? dayTasks.map((task) => {
-              const priority = computeSmartPriority(task, tasks);
-              return (
-                <article className="weekly-task-card" key={task.id}>
-                  <div>
-                    <strong>{task.title}</strong>
-                    <span>{categoryLabel(task)} · {task.durationHours}h total · {priorityLabels[priority]} priority</span>
-                  </div>
-                  <b>{taskDailyLoadPoints(task)} pts today</b>
-                </article>
-              );
-            }) : <p className="empty-scenario-note">No tasks active on this day. Pick another day or add a task with a start date.</p>}
+            {dayTasks.length ? dayTasks.map((task) => renderPlanTaskCard(task, `${taskDailyLoadPoints(task)} pts today`)) : <p className="empty-scenario-note">No tasks active on this day. Pick another day or add a task with a start date.</p>}
           </div>
         </section>
       )}
@@ -570,18 +672,7 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
             <small>{selectedWeekTasks.length} task{selectedWeekTasks.length === 1 ? '' : 's'}</small>
           </div>
           <div className="weekly-task-plan">
-            {selectedWeekTasks.length ? selectedWeekTasks.map((task) => {
-              const priority = computeSmartPriority(task, tasks);
-              return (
-                <article className="weekly-task-card" key={task.id}>
-                  <div>
-                    <strong>{task.title}</strong>
-                    <span>{categoryLabel(task)} · {task.durationHours}h total · {priorityLabels[priority]} priority</span>
-                  </div>
-                  <b>{taskDailyLoadPoints(task)} pts today</b>
-                </article>
-              );
-            }) : <p className="empty-scenario-note">No tasks active on this day. Pick another day in the week.</p>}
+            {selectedWeekTasks.length ? selectedWeekTasks.map((task) => renderPlanTaskCard(task, `${taskDailyLoadPoints(task)} pts today`)) : <p className="empty-scenario-note">No tasks active on this day. Pick another day in the week.</p>}
           </div>
 
           {nextWeekTasks.length > 0 && (
@@ -594,18 +685,7 @@ export function TasksView({ stored, onSave, selectedWeekAnchor, onSelectedWeekCh
                 <small>{nextWeekTaskPoints} pts</small>
               </div>
               <div className="weekly-task-plan">
-                {nextWeekTasks.map((task) => {
-                  const priority = computeSmartPriority(task, tasks);
-                  return (
-                    <article className="weekly-task-card moved" key={task.id}>
-                      <div>
-                        <strong>{task.title}</strong>
-                        <span>Moved to next week · {categoryLabel(task)} · {task.durationHours}h · {priorityLabels[priority]} priority</span>
-                      </div>
-                      <b>{taskLoadPoints(task)} pts</b>
-                    </article>
-                  );
-                })}
+                {nextWeekTasks.map((task) => renderPlanTaskCard(task, `${taskLoadPoints(task)} pts`, true))}
               </div>
             </>
           )}
