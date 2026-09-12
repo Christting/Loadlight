@@ -6,6 +6,10 @@
 
 ### Make room to breathe.
 
+<img src="public/lumi/hello.png" alt="Lumi waving hello" width="190" />
+
+### Hello, welcome to LoadLight.
+
 **A stress and workload manager for students who need to see capacity before saying yes.**
 
 Team roti canAI · CodeNection 2026 · Stress & Workload Manager
@@ -865,126 +869,14 @@ Deadline: 13 September 2026, 11:59 PM.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 15. Appendix: Feature Rationale in Short Mindmap Format
-
-### Planning + task management
-
-KEPT  
-To-do list  
-Why: tasks are the input for calculating workload.
-
-KEPT  
-Add task form  
-Why: lets users enter the details needed to calculate load.
-
-KEPT  
-Day plan  
-Why: shows what work is active on a selected day.
-
-KEPT  
-Weekly plan  
-Why: shows how workload builds across the week.
-
-KEPT  
-Reminder  
-Why: turns the plan into action before the task starts.
-
-KEPT  
-Edit / reschedule  
-Why: users need control if the app's suggested plan feels wrong.
-
-### Workload awareness
-
-KEPT  
-Workload calculation  
-Why: turns tasks into a clear load score.
-
-KEPT  
-Dashboard  
-Why: gives one quick answer: how heavy is this week?
-
-KEPT  
-Stress review history  
-Why: lets users look back at repeated stress patterns.
-
-### Decision support
-
-KEPT  
-What-if  
-Why: shows the cost before the user says yes.
-
-KEPT  
-Balance  
-Why: helps users move, keep, or drop tasks when the week is too full.
-
-KEPT  
-AI auto plan  
-Why: suggests a lighter plan while still letting the user confirm.
-
-### Emotional support
-
-KEPT  
-Lumi chatbot  
-Why: gives quick support when the user feels stuck or overloaded.
-
-KEPT  
-Journal  
-Why: helps analyze mood, stress source, and pressure patterns.
-
-KEPT  
-Recovery actions  
-Why: gives quick reset tools when stress is high.
-
-KEPT  
-Reflect  
-Why: helps users understand what is causing the pressure.
-
-KEPT  
-Boundary  
-Why: helps users say no or ask to move something calmly.
-
-### Social support
-
-REDUCED  
-Community  
-Why: peer support is useful, but secondary to workload planning.
-
-### Dropped examples
-
-DROPPED  
-Mood-only tracker  
-Why: records emotion, but does not help reduce workload.
-
-DROPPED  
-Pomodoro timer  
-Why: helps focus, but does not show overload.
-
-DROPPED  
-Anonymous confession wall  
-Why: gives emotional release, but could become unfocused and hard to moderate.
-
-DROPPED  
-Reward shop / points system  
-Why: feels game-like but does not solve capacity planning.
-
-DROPPED  
-Study group matching  
-Why: useful academically, but not directly connected to workload balance.
-
-DROPPED  
-AI therapist chatbot  
-Why: too risky and too broad; LoadLight supports stress but does not replace professional help.
-
-<p align="right"><a href="#top">Back to top</a></p>
-
-## 16. Setup
+## 15. Setup
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 17. Repository Notes
+## 16. Repository Notes
 
 The prototype uses shared workload logic so Home, Tasks, What-if, and Balance should not hardcode separate load values.
 
