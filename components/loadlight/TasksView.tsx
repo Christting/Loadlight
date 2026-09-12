@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Lumi } from '@/components/loadlight/Lumi';
-import { activeWeekTaskLoad, activeWeekTasks, addDaysISO, DEFAULT_WORKLOAD_WEEK_ANCHOR, computeSmartPriority, taskLoadPoints, workloadWeekRange } from '@/lib/loadlight/load-logic';
+import { activeDayTaskLoad, activeDayTasks, activeWeekTaskLoad, activeWeekTasks, addDaysISO, DEFAULT_WORKLOAD_WEEK_ANCHOR, computeSmartPriority, taskDailyLoadPoints, taskLoadPoints, workloadWeekRange } from '@/lib/loadlight/load-logic';
 import type {
   Demand,
   Flexibility,
@@ -87,20 +87,40 @@ function todayHeaderLabel(): string {
   return new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 }
 
+function todayISO(): string {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().slice(0, 10);
+}
+
+function compactDateLabel(date: string): string {
+  return new Intl.DateTimeFormat('en-US', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+}
+
+function rangeLabel(start: string, end: string): string {
+  return `${compactDateLabel(start)} - ${compactDateLabel(end)}`;
+}
+
 // --- Component ------------------------------------------------------------
 
 export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; onSave: (next: StoredLoadLightState, message: string) => void }) {
   const tasks = stored.tasks ?? [];
-  const workloadWeek = useMemo(() => workloadWeekRange(DEFAULT_WORKLOAD_WEEK_ANCHOR), []);
-  const [mode, setMode] = useState<'list' | 'week'>('list');
+  const defaultFormDate = useMemo(() => todayISO(), []);
+  const [mode, setMode] = useState<'list' | 'day' | 'week'>('list');
   const [formOpen, setFormOpen] = useState(false);
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<TaskCategory>('academic');
   const [customCategory, setCustomCategory] = useState('');
+  const [startDate, setStartDate] = useState(defaultFormDate);
+  const [dueDate, setDueDate] = useState(defaultFormDate);
   const [hours, setHours] = useState('');
   const [flexibility, setFlexibility] = useState<Flexibility>('flexible');
-  const load = useMemo(() => activeWeekTaskLoad(tasks), [tasks]);
+  const [selectedWeekAnchor, setSelectedWeekAnchor] = useState(defaultFormDate);
+  const [selectedDay, setSelectedDay] = useState(defaultFormDate);
+  const pendingTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped');
+  const closedTasks = tasks.filter((task) => task.status === 'done' || task.status === 'skipped');
+  const load = useMemo(() => activeWeekTaskLoad(pendingTasks, selectedWeekAnchor), [pendingTasks, selectedWeekAnchor]);
   const loadPercent = Math.min(120, Math.round(load));
   const tone = loadStatusTone(load);
   const draftHours = Number(hours);
@@ -108,7 +128,8 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     ? taskLoadPoints({
       id: 'draft-task',
       title,
-      date: '',
+      date: dueDate,
+      scheduledDate: startDate,
       timeLabel: 'Flexible',
       durationHours: draftHours,
       demand: demandFromHours(draftHours),
@@ -121,13 +142,12 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     : 0;
   const draftLoadPercent = Math.min(120, loadPercent + draftTaskLoad);
 
-  const pendingTasks = tasks.filter((task) => task.status !== 'done' && task.status !== 'skipped');
-  const closedTasks = tasks.filter((task) => task.status === 'done' || task.status === 'skipped');
-
   function resetForm() {
     setTitle('');
     setCategory('academic');
     setCustomCategory('');
+    setStartDate(defaultFormDate);
+    setDueDate(defaultFormDate);
     setHours('');
     setFlexibility('flexible');
   }
@@ -136,11 +156,13 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     event.preventDefault();
     const parsedHours = Number(hours);
     if (!title.trim() || !parsedHours || parsedHours <= 0) return;
+    const taskWeek = workloadWeekRange(startDate || DEFAULT_WORKLOAD_WEEK_ANCHOR);
 
     const task: Task = {
       id: newTaskId(title),
       title: title.trim(),
-      date: '',
+      date: dueDate,
+      scheduledDate: startDate,
       timeLabel: 'Flexible',
       durationHours: parsedHours,
       demand: demandFromHours(parsedHours),
@@ -149,11 +171,13 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
       flexibility,
       loadMix: {},
       status: 'not-started',
-      weekStart: workloadWeek.start,
-      weekEnd: workloadWeek.end,
+      weekStart: taskWeek.start,
+      weekEnd: taskWeek.end,
       autoScheduled: false,
     };
     onSave({ ...stored, tasks: [task, ...tasks] }, 'Task added.');
+    setSelectedWeekAnchor(startDate);
+    setSelectedDay(startDate);
     resetForm();
     setFormOpen(false);
   }
@@ -216,6 +240,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
         <div className="task-info">
           <p className="task-field"><span className="field-label">Category</span>{categoryLabel(task)}</p>
           <p className="task-field"><span className="field-label">Estimated time</span>{task.durationHours}h</p>
+          <p className="task-field"><span className="field-label">Start date</span>{task.scheduledDate || 'No start set'}</p>
           <p className="task-field"><span className="field-label">Due date</span>{task.date || 'No date set'}</p>
           <p className="task-field"><span className="field-label">Workload</span>{taskLoadPoints(task)} points </p>
           {!closed && (
@@ -256,11 +281,55 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
     );
   }
 
-  const weeklyTasks = activeWeekTasks(pendingTasks, DEFAULT_WORKLOAD_WEEK_ANCHOR);
-  const weeklyTaskPoints = weeklyTasks.reduce((total, task) => total + taskLoadPoints(task), 0);
+  const selectedWeekTasksAll = activeWeekTasks(pendingTasks, selectedWeekAnchor);
+  const selectedWeekLoad = activeWeekTaskLoad(pendingTasks, selectedWeekAnchor);
+  const selectedWeek = workloadWeekRange(selectedWeekAnchor);
+  const dayOptions = Array.from({ length: 7 }, (_, index) => addDaysISO(selectedWeek.start, index));
+  const dayTasks = activeDayTasks(pendingTasks, selectedDay);
+  const dayTaskPoints = activeDayTaskLoad(pendingTasks, selectedDay);
+  const selectedWeekTasks = activeDayTasks(pendingTasks, selectedDay);
+  const selectedWeekTaskPoints = activeDayTaskLoad(pendingTasks, selectedDay);
+  const weekDayLoads = dayOptions.map((date) => ({
+    date,
+    points: activeDayTaskLoad(pendingTasks, date),
+    count: activeDayTasks(pendingTasks, date).length,
+  }));
   const nextWeekAnchor = addDaysISO(DEFAULT_WORKLOAD_WEEK_ANCHOR, 7);
   const nextWeekTasks = activeWeekTasks(pendingTasks, nextWeekAnchor);
   const nextWeekTaskPoints = nextWeekTasks.reduce((total, task) => total + taskLoadPoints(task), 0);
+  function choosePlanWeek(anchor: string) {
+    const week = workloadWeekRange(anchor);
+    setSelectedWeekAnchor(anchor);
+    setSelectedDay(week.start);
+  }
+
+  function choosePlanDay(day: string) {
+    setSelectedDay(day);
+    setSelectedWeekAnchor(day);
+  }
+
+  function renderWeekPicker() {
+    return (
+      <div className="plan-week-picker" aria-label="Choose week">
+        <button type="button" onClick={() => choosePlanWeek(addDaysISO(selectedWeek.start, -7))}>Previous</button>
+        <label>
+          <span>Pick week</span>
+          <Input type="date" value={selectedWeekAnchor} onChange={(event) => choosePlanWeek(event.target.value)} aria-label="Pick week date" />
+        </label>
+        <button type="button" onClick={() => choosePlanWeek(addDaysISO(selectedWeek.start, 7))}>Next</button>
+        <small>{rangeLabel(selectedWeek.start, selectedWeek.end)}</small>
+      </div>
+    );
+  }
+
+  function renderDayPicker() {
+    return (
+      <label className="plan-day-picker">
+        <span>Pick day</span>
+        <Input type="date" value={selectedDay} onChange={(event) => choosePlanDay(event.target.value)} aria-label="Pick day date" />
+      </label>
+    );
+  }
 
   return (
     <div className="view-content tasks-view">
@@ -275,7 +344,7 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
           <p className="micro-label">ACTIVE LOAD</p>
           <strong className={`load-figure ${tone}`}>{loadPercent}%</strong>
           <p>
-            {weeklyTasks.length} task{weeklyTasks.length === 1 ? '' : 's'} this week · calculated from your tasks
+            {selectedWeekTasksAll.length} task{selectedWeekTasksAll.length === 1 ? '' : 's'} selected week · {pendingTasks.length} open total
           </p>
         </div>
       </section>
@@ -283,6 +352,9 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
       <div className="tasks-mode-toggle" role="tablist" aria-label="Task view">
         <button type="button" role="tab" aria-selected={mode === 'list'} className={mode === 'list' ? 'active' : ''} onClick={() => setMode('list')}>
           To-Do List
+        </button>
+        <button type="button" role="tab" aria-selected={mode === 'day'} className={mode === 'day' ? 'active' : ''} onClick={() => setMode('day')}>
+          Day plan
         </button>
         <button type="button" role="tab" aria-selected={mode === 'week'} className={mode === 'week' ? 'active' : ''} onClick={() => setMode('week')}>
           Weekly plan
@@ -293,9 +365,9 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
         <section className="editorial-section" aria-labelledby="task-list-title">
           <div className="section-title">
             <div>
-              <h2 id="task-list-title">This week&apos;s list</h2>
+              <h2 id="task-list-title">Open tasks</h2>
             </div>
-            <small>{weeklyTasks.length} open</small>
+            <small>{pendingTasks.length} open</small>
           </div>
 
           {!formOpen && (
@@ -333,6 +405,27 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
                     aria-label="Custom category"
                   />
                 )}
+              </fieldset>
+
+              <fieldset className="task-form-fieldset">
+                <legend>When will you start?</legend>
+                <Input
+                  type="date"
+                  value={startDate}
+                  min={defaultFormDate}
+                  max={addDaysISO(defaultFormDate, 30)}
+                  onChange={(event) => {
+                    const nextStart = event.target.value;
+                    setStartDate(nextStart);
+                    if (dueDate && dueDate < nextStart) setDueDate(nextStart);
+                  }}
+                  aria-label="Start date"
+                />
+              </fieldset>
+
+              <fieldset className="task-form-fieldset">
+                <legend>When is it due?</legend>
+                <Input type="date" value={dueDate} min={startDate || defaultFormDate} max={addDaysISO(defaultFormDate, 60)} onChange={(event) => setDueDate(event.target.value)} aria-label="Due date" />
               </fieldset>
 
               <fieldset className="task-form-fieldset">
@@ -383,8 +476,8 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
                   </div>
                 </fieldset>
 
-                <div className="task-week-note" aria-label="Demo week note">
-                  <span>Auto-set to this week&apos;s workload range.</span>
+                <div className="task-week-note" aria-label="Task date note">
+                  <span>Start date sets the day and week load. Due date helps calculate priority.</span>
                 </div>
               </div>
 
@@ -406,9 +499,42 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
             </form>
           )}
 
-          {weeklyTasks.length === 0 && <p className="empty-scenario-note">Nothing carried this week. Add a task above, or check Weekly plan for next week.</p>}
+          {pendingTasks.length === 0 && <p className="empty-scenario-note">Nothing open right now. Add a task above when something new comes in.</p>}
 
-          <div className="task-list">{weeklyTasks.map((task) => renderTaskRow(task, false))}</div>
+          <div className="task-list">{pendingTasks.map((task) => renderTaskRow(task, false))}</div>
+        </section>
+      )}
+
+      {mode === 'day' && (
+        <section className="editorial-section" aria-labelledby="day-title">
+          <div className="section-title">
+            <div>
+              <h2 id="day-title">Day plan</h2>
+            </div>
+            <small>{dayTaskPoints} pts</small>
+          </div>
+          {renderDayPicker()}
+          <div className="week-load-summary day-summary">
+            <div>
+              <span>Day</span>
+              <strong>{dayTaskPoints}%</strong>
+            </div>
+            <p>{dayTasks.length} task{dayTasks.length === 1 ? '' : 's'} active on {compactDateLabel(selectedDay)}. Multi-day tasks are spread across their date range.</p>
+          </div>
+          <div className="weekly-task-plan">
+            {dayTasks.length ? dayTasks.map((task) => {
+              const priority = computeSmartPriority(task, tasks);
+              return (
+                <article className="weekly-task-card" key={task.id}>
+                  <div>
+                    <strong>{task.title}</strong>
+                    <span>{categoryLabel(task)} · {task.durationHours}h total · {priorityLabels[priority]} priority</span>
+                  </div>
+                  <b>{taskDailyLoadPoints(task)} pts today</b>
+                </article>
+              );
+            }) : <p className="empty-scenario-note">No tasks active on this day. Pick another day or add a task with a start date.</p>}
+          </div>
         </section>
       )}
 
@@ -418,28 +544,45 @@ export function TasksView({ stored, onSave }: { stored: StoredLoadLightState; on
             <div>
               <h2 id="week-title">Weekly plan</h2>
             </div>
-            <small>{weeklyTaskPoints} pts</small>
+            <small>{selectedWeekLoad} pts</small>
           </div>
           <div className="week-load-summary">
             <div>
-              <span>This week</span>
-              <strong>{loadPercent}%</strong>
+              <span>Selected week</span>
+              <strong>{selectedWeekLoad}%</strong>
             </div>
-            <p>{weeklyTasks.length} active task{weeklyTasks.length === 1 ? '' : 's'} are counted in this workload range.</p>
+            <p>{selectedWeekTasksAll.length} active task{selectedWeekTasksAll.length === 1 ? '' : 's'} from {compactDateLabel(selectedWeek.start)} to {compactDateLabel(selectedWeek.end)}.</p>
+          </div>
+          {renderWeekPicker()}
+          <div className="day-picker-row week-day-picker" aria-label="Choose a day in weekly plan">
+            {weekDayLoads.map((day) => (
+              <button type="button" className={selectedDay === day.date ? 'active' : ''} key={day.date} onClick={() => setSelectedDay(day.date)}>
+                <span>{compactDateLabel(day.date)}</span>
+                <strong>{day.points} pts</strong>
+                <small>{day.count} task{day.count === 1 ? '' : 's'}</small>
+              </button>
+            ))}
+          </div>
+          <div className="section-title selected-day-title">
+            <div>
+              <h3>{compactDateLabel(selectedDay)}</h3>
+              <p>{selectedWeekTaskPoints}% active on this day. Multi-day tasks are spread across their range.</p>
+            </div>
+            <small>{selectedWeekTasks.length} task{selectedWeekTasks.length === 1 ? '' : 's'}</small>
           </div>
           <div className="weekly-task-plan">
-            {weeklyTasks.length ? weeklyTasks.map((task) => {
+            {selectedWeekTasks.length ? selectedWeekTasks.map((task) => {
               const priority = computeSmartPriority(task, tasks);
               return (
                 <article className="weekly-task-card" key={task.id}>
                   <div>
                     <strong>{task.title}</strong>
-                    <span>{categoryLabel(task)} · {task.durationHours}h · {priorityLabels[priority]} priority</span>
+                    <span>{categoryLabel(task)} · {task.durationHours}h total · {priorityLabels[priority]} priority</span>
                   </div>
-                  <b>{taskLoadPoints(task)} pts</b>
+                  <b>{taskDailyLoadPoints(task)} pts today</b>
                 </article>
               );
-            }) : <p className="empty-scenario-note">No active tasks in this week. Add a task from the To-Do List.</p>}
+            }) : <p className="empty-scenario-note">No tasks active on this day. Pick another day in the week.</p>}
           </div>
 
           {nextWeekTasks.length > 0 && (
