@@ -4,7 +4,7 @@
 
 # LoadLight
 
-### Make room to breathe.
+### Lighten your load.
 
 <img src="public/lumi/hello.png" alt="Lumi waving hello" width="190" />
 
