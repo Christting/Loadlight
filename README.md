@@ -80,7 +80,7 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 
 | Scoring area | Quick jump |
 |---|---|
-| Ideation 25% | [Ideas considered](#21-ideas-we-considered), [Ideation boards](#22-ideation-boards), [Full ideation evidence](#9-full-ideation-evidence) |
+| Ideation 25% | [Ideas considered](#21-ideas-we-considered), [Ideation session](#22-ideation-session), [Full ideation evidence](#9-full-ideation-evidence) |
 | Creativity and Novelty 15% | [What makes it different](#4-what-makes-it-different), [Why this direction won](#212-why-this-direction-won) |
 | Feasibility 15% | [Technical architecture](#5-technical-architecture--feasibility), [Risks and mitigation](#feasibility-risk-and-mitigation) |
 | Design 10% | [Design and prototype](#3-design--prototype), [Prototype interaction details](#prototype-interaction-details) |
@@ -121,9 +121,7 @@ If you only have a few minutes, read these sections in this order:
 
 | Evidence | File / section |
 |---|---|
-| Editable team ideation mindmap | [docs/loadlight-team-ideation-mindmap.drawio](docs/loadlight-team-ideation-mindmap.drawio) |
-| Mindmap HTML preview | [docs/loadlight-ideas-mindmap.html](docs/loadlight-ideas-mindmap.html) |
-| Original idea discussion PDF | [docs/idea-discussion.pdf](docs/idea-discussion.pdf) |
+| Ideation session | [mindmap image](docs/loadlight-ideation-mindmap.png), [editable draw.io](docs/loadlight-team-ideation-mindmap.drawio), [HTML preview](docs/loadlight-ideas-mindmap.html), [original discussion PDF](docs/idea-discussion.pdf) |
 | User guide PDF | [docs/loadlight-user-guide.pdf](docs/loadlight-user-guide.pdf) |
 | Detailed ideation notes | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 | Ideas considered CSV | [docs/ideas-considered-table.csv](docs/ideas-considered-table.csv) |
@@ -273,14 +271,17 @@ We chose the stress and workload manager direction because it combines the stron
 
 The final direction is stronger because it is not a pure productivity app and not a pure wellness app. LoadLight connects both sides: the visible schedule and the invisible emotional cost.
 
-### 2.2 Ideation Boards
+### 2.2 Ideation Session
 
-Editable mindmap source:
+All ideation evidence is grouped here as one session, from raw discussion to final organized map:
 
-- [Team ideation mindmap - editable draw.io file](docs/loadlight-team-ideation-mindmap.drawio)
-- [Team ideation mindmap - HTML preview](docs/loadlight-ideas-mindmap.html)
-- [Original idea discussion PDF](docs/idea-discussion.pdf)
-- [Detailed ideation notes and tables](docs/ideation-mindmap-and-tables.md)
+| Ideation evidence | Link |
+|---|---|
+| Original idea discussion PDF | [docs/idea-discussion.pdf](docs/idea-discussion.pdf) |
+| Final exported mindmap image | [docs/loadlight-ideation-mindmap.png](docs/loadlight-ideation-mindmap.png) |
+| Editable draw.io mindmap | [docs/loadlight-team-ideation-mindmap.drawio](docs/loadlight-team-ideation-mindmap.drawio) |
+| HTML mindmap preview | [docs/loadlight-ideas-mindmap.html](docs/loadlight-ideas-mindmap.html) |
+| Detailed ideation notes and tables | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 
 ![LoadLight ideation mindmap](docs/loadlight-ideation-mindmap.png)
 
