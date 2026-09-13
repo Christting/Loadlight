@@ -36,7 +36,7 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 &nbsp;·&nbsp;
 <a href="#5-technical-architecture--feasibility"><strong>Tech</strong></a>
 &nbsp;·&nbsp;
-<a href="#13-rubric-coverage-map"><strong>Rubric Map</strong></a>
+<a href="#12-rubric-coverage-map"><strong>Rubric Map</strong></a>
 
 </div>
 
@@ -67,14 +67,13 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 | [5. Technical Architecture & Feasibility](#5-technical-architecture--feasibility) | Stack, data model, workload engine, trade-offs, and risks. |
 | [6. Impact](#6-impact) | Target users, before/after value, and scalability. |
 | [7. Demo Guide](#7-demo-guide) | Step-by-step judge demo flow. |
-| [8. Video Outline](#8-video-outline) | Presentation structure and script. |
 | [2.4 Full Ideation Evidence](#24-full-ideation-evidence) | Mermaid mindmap, problem tree, user flow, iterations, and breadth of exploration. |
-| [9. Workload Logic Details](#9-workload-logic-details) | How task points, day load, week load, and priority are calculated. |
-| [10. Demo Mode Notes](#10-demo-mode-notes) | What the demo is designed to show. |
-| [11. Future Plan and Business Plan](#11-future-plan-and-business-plan) | Supabase future database path, integrations, monetization, and university partnerships. |
-| [12. Submission Checklist](#12-submission-checklist) | Final checks before submission. |
-| [13. Rubric Coverage Map](#13-rubric-coverage-map) | Direct mapping to judging criteria. |
-| [14. Setup](#14-setup) | Local development commands. |
+| [8. Workload Logic Details](#8-workload-logic-details) | How task points, day load, week load, and priority are calculated. |
+| [9. Demo Mode Notes](#9-demo-mode-notes) | What the demo is designed to show. |
+| [10. Future Plan and Business Plan](#10-future-plan-and-business-plan) | Supabase future database path, integrations, monetization, and university partnerships. |
+| [11. Submission Checklist](#11-submission-checklist) | Final checks before submission. |
+| [12. Rubric Coverage Map](#12-rubric-coverage-map) | Direct mapping to judging criteria. |
+| [13. Setup](#13-setup) | Local development commands. |
 
 ## Rubric Jump Buttons
 
@@ -84,8 +83,8 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 | Creativity and Novelty 15% | [What makes it different](#4-what-makes-it-different), [Why this direction won](#212-why-this-direction-won) |
 | Feasibility 15% | [Technical architecture](#5-technical-architecture--feasibility), [Risks and mitigation](#feasibility-risk-and-mitigation) |
 | Design 10% | [Design and prototype](#3-design--prototype), [Prototype interaction details](#prototype-interaction-details) |
-| Impact 20% | [Impact](#6-impact), [Future and business plan](#11-future-plan-and-business-plan) |
-| Presentation 15% | [Demo guide](#7-demo-guide), [Video outline](#8-video-outline) |
+| Impact 20% | [Impact](#6-impact), [Future and business plan](#10-future-plan-and-business-plan) |
+| Presentation 15% | [Demo guide](#7-demo-guide), [Presentation links](#submission-links) |
 
 <a id="submission-links"></a>
 
@@ -115,7 +114,7 @@ If you only have a few minutes, read these sections in this order:
 | 3 | [Ideation evidence](#2-ideation--process) | Shows breadth, dropped ideas, mentor feedback, and iteration. |
 | 4 | [Prototype demo flow](#7-demo-guide) | Shows how judges can try the product end to end. |
 | 5 | [Feasibility](#5-technical-architecture--feasibility) | Shows stack, architecture, constraints, and realistic build scope. |
-| 6 | [Rubric coverage](#13-rubric-coverage-map) | Maps scoring criteria directly to README evidence. |
+| 6 | [Rubric coverage](#12-rubric-coverage-map) | Maps scoring criteria directly to README evidence. |
 
 ## Evidence Pack
 
@@ -126,7 +125,7 @@ If you only have a few minutes, read these sections in this order:
 | Detailed ideation notes | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 | Ideas considered CSV | [docs/ideas-considered-table.csv](docs/ideas-considered-table.csv) |
 | Mentor feedback CSV | [docs/mentor-feedback-table.csv](docs/mentor-feedback-table.csv) |
-| Workload logic explanation | [9. Workload Logic Details](#9-workload-logic-details) |
+| Workload logic explanation | [8. Workload Logic Details](#8-workload-logic-details) |
 | Demo guide | [7. Demo Guide](#7-demo-guide) |
 
 ## Quick Navigation
@@ -140,8 +139,7 @@ If you only have a few minutes, read these sections in this order:
 | [5. Technical Architecture & Feasibility](#5-technical-architecture--feasibility) | Stack, architecture, data model, risks, build scope. |
 | [6. Impact](#6-impact) | Target users, before/after value, scalability. |
 | [7. Demo Guide](#7-demo-guide) | Suggested flow for judges to try the app. |
-| [8. Video Outline](#8-video-outline) | Presentation structure and script. |
-| [13. Rubric Coverage Map](#13-rubric-coverage-map) | Where each scoring area is addressed. |
+| [12. Rubric Coverage Map](#12-rubric-coverage-map) | Where each scoring area is addressed. |
 
 > **Core idea:** LoadLight is not just a to-do list and not just a wellness app. It connects both: task planning, workload calculation, What-if forecasting, Balance repair, and Lumi Care.
 
@@ -498,25 +496,6 @@ Suggested judge flow:
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 8. Video Outline
-
-Target duration: 3 to 5 minutes.
-
-### Suggested structure
-
-| Part | Speaker focus | What to cover |
-|---|---|---|
-| Opening | Person 1 | Hook the judge with the moment a student is asked to take one more commitment. Introduce LoadLight as the way to see the cost before saying yes. |
-| Problem | Person 1 | Explain that students already have lists and calendars, but they do not have a clear capacity signal. |
-| Product overview | Person 1 | LoadLight connects tasks, workload, What-if, Balance, and Lumi Care. |
-| Feature demo 1 | Person 2 | Show Tasks, Add task, Dashboard, Day plan, Weekly plan, reminders, and edit/reschedule controls. |
-| Feature demo 2 | Person 3 | Show What-if and Balance. Explain how users test a possible new commitment, then move, keep, or drop tasks if the week is too heavy. |
-| Tech and feasibility | Person 4 | Explain Next.js, TypeScript, localStorage prototype, shared workload logic, Gemini-powered Lumi support, and Supabase as the future auth/PostgreSQL database path. |
-| Future and business plan | Person 4 | Explain calendar/task platform integration, personalization, freemium model, premium AI planning, and university wellbeing partnerships. |
-| Closing | Person 4 | End with the core message: LoadLight helps students carry less before things become too heavy. |
-
-<p align="right"><a href="#top">Back to top</a></p>
-
 ### 2.4 Full Ideation Evidence
 
 ### Detailed mindmap source
@@ -735,7 +714,7 @@ flowchart LR
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 9. Workload Logic Details
+## 8. Workload Logic Details
 
 LoadLight's workload score is task-based. This is important because the app should not show random or hardcoded percentages.
 
@@ -795,7 +774,7 @@ Users can still override the system priority because the app should support the 
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 10. Demo Mode Notes
+## 9. Demo Mode Notes
 
 The demo mode should show the main product story clearly:
 
@@ -812,7 +791,7 @@ The demo mode should show the main product story clearly:
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 11. Future Plan and Business Plan
+## 10. Future Plan and Business Plan
 
 For the future, we want LoadLight to fit into real student life.
 
@@ -826,7 +805,7 @@ There is also a university partnership opportunity. Schools are already trying t
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 12. Submission Checklist
+## 11. Submission Checklist
 
 Only two links need to go into the final Google Form:
 
@@ -850,7 +829,7 @@ Deadline: 13 September 2026, 11:59 PM.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 13. Rubric Coverage Map
+## 12. Rubric Coverage Map
 
 | Rubric area | Evidence in this README |
 |---|---|
@@ -863,18 +842,18 @@ Deadline: 13 September 2026, 11:59 PM.
 | Feasibility | Tech stack, architecture, data model, trade-offs, risks, and build scope. |
 | Design | Prototype flow, screen list, UX rationale, and visual direction. |
 | Impact | Target users, before/after table, scalability, and university partnership plan. |
-| Presentation | Video outline and presentation links. |
+| Presentation | Demo guide, presentation slides, and video link. |
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 14. Setup
+## 13. Setup
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 15. Repository Notes
+## 14. Repository Notes
 
 The prototype uses shared workload logic so Home, Tasks, What-if, and Balance should not hardcode separate load values.
 
