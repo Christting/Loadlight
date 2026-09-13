@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run vercel:build",
+  "outputDirectory": "vercel-output",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/((?!_next|lumi|og.png|favicon.svg|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
