@@ -250,11 +250,7 @@ Editable mindmap source:
 - [Team ideation mindmap - HTML preview](docs/loadlight-ideas-mindmap.html)
 - [Detailed ideation notes and tables](docs/ideation-mindmap-and-tables.md)
 
-When the final diagram is exported from diagrams.net, save it as `docs/loadlight-ideation-mindmap.png` and embed it here:
-
-```md
 ![LoadLight ideation mindmap](docs/loadlight-ideation-mindmap.png)
-```
 
 This mindmap shows how our team started from different directions: stress support, planning, decision support, and reflection. We then compared which ideas were kept, merged, reduced, or dropped before combining the strongest parts into LoadLight.
 
@@ -841,8 +837,7 @@ Before final submission:
 - Replace the YouTube `TBD` with the final unlisted video link.
 - Confirm the Presentation Slides link opens correctly.
 - Confirm the Live Demo link opens correctly.
-- Export the editable diagrams.net mindmap as `docs/loadlight-ideation-mindmap.png`.
-- Embed the exported mindmap image in section 2.2.
+- Confirm the exported mindmap image displays in section 2.2.
 - Add 4 to 8 key screenshots of the prototype if time allows.
 - Confirm the GitHub repository is public.
 - Confirm the video is not over 5 minutes.
@@ -880,4 +875,4 @@ npm run dev
 
 The prototype uses shared workload logic so Home, Tasks, What-if, and Balance should not hardcode separate load values.
 
-Before final submission, replace all `TBD` items with public links and export the editable mindmap as `docs/loadlight-ideation-mindmap.png` so it appears directly inside this README.
+Before final submission, replace all remaining `TBD` items with public links and confirm the exported mindmap appears directly inside this README.
