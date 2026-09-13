@@ -1,10 +1,10 @@
 # LoadLight Ideation Mindmap And Tables
 
-This document is editable source material for the README ideation section. It is written in Markdown so the team can copy, shorten, or edit it directly.
+This document records the ideation evidence behind LoadLight, including the mindmap, problem tree, user flow, ideas considered, iteration history, mentor feedback, and final feature decisions.
 
 ## 1. Detailed Mindmap
 
-Paste this Mermaid block into a Markdown renderer that supports Mermaid, or use it as the editable text source for a Canva/Figma mindmap.
+The mindmap below summarizes how the team moved from broad student stress ideas into the final workload-aware planning concept.
 
 ```mermaid
 mindmap
