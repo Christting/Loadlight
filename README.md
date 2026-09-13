@@ -96,6 +96,7 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 | Team | Team roti canAI |
 | Members | Christ Ting Shin Ling, Cornelia Lim Zhi Xuan, Chiam Jie Zu, Yong Sin Ying |
 | Track | Lifestyle Track: Beating the Burnout |
+| Problem statement | Student burnout caused by invisible workload, overcommitment, and scattered responsibilities. |
 | Live demo | [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/) |
 | Video presentation | [https://youtu.be/wkfftuVOJb8](https://youtu.be/wkfftuVOJb8) |
 | Presentation slides | [https://canva.link/u23gu1mgbt5qp75](https://canva.link/u23gu1mgbt5qp75) |
