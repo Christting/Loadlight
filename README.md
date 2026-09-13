@@ -99,6 +99,7 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 | Live demo | [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/) |
 | Video presentation | [https://youtu.be/wkfftuVOJb8](https://youtu.be/wkfftuVOJb8) |
 | Presentation slides | [https://canva.link/u23gu1mgbt5qp75](https://canva.link/u23gu1mgbt5qp75) |
+| User guide | [docs/loadlight-user-guide.pdf](docs/loadlight-user-guide.pdf) |
 
 <a id="reviewer-fast-path"></a>
 
@@ -122,6 +123,7 @@ If you only have a few minutes, read these sections in this order:
 | Editable team ideation mindmap | [docs/loadlight-team-ideation-mindmap.drawio](docs/loadlight-team-ideation-mindmap.drawio) |
 | Mindmap HTML preview | [docs/loadlight-ideas-mindmap.html](docs/loadlight-ideas-mindmap.html) |
 | Original idea discussion PDF | [docs/idea-discussion.pdf](docs/idea-discussion.pdf) |
+| User guide PDF | [docs/loadlight-user-guide.pdf](docs/loadlight-user-guide.pdf) |
 | Detailed ideation notes | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 | Ideas considered CSV | [docs/ideas-considered-table.csv](docs/ideas-considered-table.csv) |
 | Mentor feedback CSV | [docs/mentor-feedback-table.csv](docs/mentor-feedback-table.csv) |
