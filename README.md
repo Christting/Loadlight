@@ -117,7 +117,7 @@ If you only have a few minutes, read these sections in this order:
 
 | Evidence | File / section |
 |---|---|
-| Ideation session | [mindmap image](docs/loadlight-ideation-mindmap.png), [editable draw.io](docs/loadlight-team-ideation-mindmap.drawio), [HTML preview](docs/loadlight-ideas-mindmap.html), [original discussion PDF](docs/idea-discussion.pdf) |
+| Ideation session | [mindmap image](docs/loadlight-ideation-mindmap.png), [HTML preview](docs/loadlight-ideas-mindmap.html), [original discussion PDF](docs/idea-discussion.pdf) |
 | User guide PDF | [docs/loadlight-user-guide.pdf](docs/loadlight-user-guide.pdf) |
 | Detailed ideation notes | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 | Ideas considered CSV | [docs/ideas-considered-table.csv](docs/ideas-considered-table.csv) |
@@ -274,7 +274,6 @@ All ideation evidence is grouped here as one session, from raw discussion to fin
 |---|---|
 | Original idea discussion PDF | [docs/idea-discussion.pdf](docs/idea-discussion.pdf) |
 | Final exported mindmap image | [docs/loadlight-ideation-mindmap.png](docs/loadlight-ideation-mindmap.png) |
-| Editable draw.io mindmap | [docs/loadlight-team-ideation-mindmap.drawio](docs/loadlight-team-ideation-mindmap.drawio) |
 | HTML mindmap preview | [docs/loadlight-ideas-mindmap.html](docs/loadlight-ideas-mindmap.html) |
 | Detailed ideation notes and tables | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 
@@ -787,7 +786,7 @@ There is also a university partnership opportunity. Schools are already trying t
 
 | Rubric area | Evidence in this README |
 |---|---|
-| Visual diagrams and mindmaps | Editable draw.io mindmap, HTML preview, Mermaid mindmap, problem tree, and user flow. |
+| Visual diagrams and mindmaps | Exported mindmap image, HTML preview, Mermaid mindmap, problem tree, and user flow. |
 | Iteration and idea evolution | Full iteration table showing pivots from general stress app to workload-aware planner. |
 | Mentor consultation | Mentor feedback table with specific feedback and what changed. |
 | Breadth of exploration | Ideas considered table plus dropped/reduced directions. |
