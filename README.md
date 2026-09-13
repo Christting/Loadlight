@@ -36,7 +36,7 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 &nbsp;·&nbsp;
 <a href="#5-technical-architecture--feasibility"><strong>Tech</strong></a>
 &nbsp;·&nbsp;
-<a href="#11-rubric-coverage-map"><strong>Rubric Map</strong></a>
+<a href="#10-rubric-coverage-map"><strong>Rubric Map</strong></a>
 
 </div>
 
@@ -70,9 +70,8 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 | [2.4 Full Ideation Evidence](#24-full-ideation-evidence) | Mermaid mindmap, problem tree, user flow, iterations, and breadth of exploration. |
 | [8. Workload Logic Details](#8-workload-logic-details) | How task points, day load, week load, and priority are calculated. |
 | [9. Future Plan and Business Plan](#9-future-plan-and-business-plan) | Supabase future database path, integrations, monetization, and university partnerships. |
-| [10. Submission Checklist](#10-submission-checklist) | Final checks before submission. |
-| [11. Rubric Coverage Map](#11-rubric-coverage-map) | Direct mapping to judging criteria. |
-| [12. Setup](#12-setup) | Local development commands. |
+| [10. Rubric Coverage Map](#10-rubric-coverage-map) | Direct mapping to judging criteria. |
+| [11. Setup](#11-setup) | Local development commands. |
 
 ## Rubric Jump Buttons
 
@@ -113,7 +112,7 @@ If you only have a few minutes, read these sections in this order:
 | 3 | [Ideation evidence](#2-ideation--process) | Shows breadth, dropped ideas, mentor feedback, and iteration. |
 | 4 | [Prototype demo flow](#7-demo-guide) | Shows how judges can try the product end to end. |
 | 5 | [Feasibility](#5-technical-architecture--feasibility) | Shows stack, architecture, constraints, and realistic build scope. |
-| 6 | [Rubric coverage](#11-rubric-coverage-map) | Maps scoring criteria directly to README evidence. |
+| 6 | [Rubric coverage](#10-rubric-coverage-map) | Maps scoring criteria directly to README evidence. |
 
 ## Evidence Pack
 
@@ -138,7 +137,7 @@ If you only have a few minutes, read these sections in this order:
 | [5. Technical Architecture & Feasibility](#5-technical-architecture--feasibility) | Stack, architecture, data model, risks, build scope. |
 | [6. Impact](#6-impact) | Target users, before/after value, scalability. |
 | [7. Demo Guide](#7-demo-guide) | Suggested flow for judges to try the app. |
-| [11. Rubric Coverage Map](#11-rubric-coverage-map) | Where each scoring area is addressed. |
+| [10. Rubric Coverage Map](#10-rubric-coverage-map) | Where each scoring area is addressed. |
 
 > **Core idea:** LoadLight is not just a to-do list and not just a wellness app. It connects both: task planning, workload calculation, What-if forecasting, Balance repair, and Lumi Care.
 
@@ -787,31 +786,7 @@ There is also a university partnership opportunity. Schools are already trying t
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 10. Submission Checklist
-
-Only two links need to go into the final Google Form:
-
-1. Public GitHub repository link.
-2. Unlisted YouTube video link.
-
-Everything important should live in this README or in the video. The final submission should not rely on separate PDF or Word documents.
-
-Before final submission:
-
-- Confirm the YouTube video link opens correctly.
-- Confirm the Presentation Slides link opens correctly.
-- Confirm the Live Demo link opens correctly.
-- Confirm the exported mindmap image displays in section 2.2.
-- Add 4 to 8 key screenshots of the prototype if time allows.
-- Confirm the GitHub repository is public.
-- Confirm the video is not over 5 minutes.
-- Confirm all links open in an incognito window.
-
-Deadline: 13 September 2026, 11:59 PM.
-
-<p align="right"><a href="#top">Back to top</a></p>
-
-## 11. Rubric Coverage Map
+## 10. Rubric Coverage Map
 
 | Rubric area | Evidence in this README |
 |---|---|
@@ -828,15 +803,13 @@ Deadline: 13 September 2026, 11:59 PM.
 
 <p align="right"><a href="#top">Back to top</a></p>
 
-## 12. Setup
+## 11. Setup
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 13. Repository Notes
+## 12. Repository Notes
 
 The prototype uses shared workload logic so Home, Tasks, What-if, and Balance should not hardcode separate load values.
-
-Before final submission, replace all remaining `TBD` items with public links and confirm the exported mindmap appears directly inside this README.
