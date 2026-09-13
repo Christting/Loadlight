@@ -71,7 +71,7 @@ Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 | Team | Team roti canAI |
 | Members | Mia, [Member 2], [Member 3], [Member 4] |
 | Problem statement | Stress & Workload Manager |
-| Live demo | TBD - deployed app link |
+| Live demo | [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/) |
 | Video presentation | TBD - unlisted YouTube link |
 | Presentation slides | TBD - public Canva link |
 
@@ -277,7 +277,7 @@ This mindmap shows how our team started from different directions: stress suppor
 
 ## 3. Design & Prototype
 
-UI Prototype: TBD - public design or live demo link
+UI Prototype: [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/)
 
 The prototype focuses on an end-to-end student workflow:
 
@@ -840,7 +840,7 @@ Before final submission:
 
 - Replace the YouTube `TBD` with the final unlisted video link.
 - Replace the Presentation Slides `TBD` with the public Canva link.
-- Replace the Live Demo `TBD` with the deployed app link.
+- Confirm the Live Demo link opens correctly.
 - Export the editable diagrams.net mindmap as `docs/loadlight-ideation-mindmap.png`.
 - Embed the exported mindmap image in section 2.2.
 - Add 4 to 8 key screenshots of the prototype if time allows.
