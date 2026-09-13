@@ -67,7 +67,6 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 | [5. Technical Architecture & Feasibility](#5-technical-architecture--feasibility) | Stack, data model, workload engine, trade-offs, and risks. |
 | [6. Impact](#6-impact) | Target users, before/after value, and scalability. |
 | [7. Demo Guide](#7-demo-guide) | Step-by-step judge demo flow. |
-| [2.4 Full Ideation Evidence](#24-full-ideation-evidence) | Mermaid mindmap, problem tree, user flow, iterations, and breadth of exploration. |
 | [8. Workload Logic Details](#8-workload-logic-details) | How task points, day load, week load, and priority are calculated. |
 | [9. Future Plan and Business Plan](#9-future-plan-and-business-plan) | Supabase future database path, integrations, monetization, and university partnerships. |
 | [10. Rubric Coverage Map](#10-rubric-coverage-map) | Direct mapping to judging criteria. |
