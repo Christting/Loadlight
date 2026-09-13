@@ -94,10 +94,10 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 | Item | Link |
 |---|---|
 | Team | Team roti canAI |
-| Members | Mia, [Member 2], [Member 3], [Member 4] |
+| Members | Christ Ting Shin Ling, Cornelia Lim Zhi Xuan, Chiam Jie Zu, Yong Sin Ying |
 | Track | Lifestyle Track: Beating the Burnout |
 | Live demo | [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/) |
-| Video presentation | TBD - unlisted YouTube link |
+| Video presentation | [https://youtu.be/wkfftuVOJb8](https://youtu.be/wkfftuVOJb8) |
 | Presentation slides | [https://canva.link/u23gu1mgbt5qp75](https://canva.link/u23gu1mgbt5qp75) |
 
 <a id="reviewer-fast-path"></a>
@@ -121,6 +121,7 @@ If you only have a few minutes, read these sections in this order:
 |---|---|
 | Editable team ideation mindmap | [docs/loadlight-team-ideation-mindmap.drawio](docs/loadlight-team-ideation-mindmap.drawio) |
 | Mindmap HTML preview | [docs/loadlight-ideas-mindmap.html](docs/loadlight-ideas-mindmap.html) |
+| Original idea discussion PDF | [docs/idea-discussion.pdf](docs/idea-discussion.pdf) |
 | Detailed ideation notes | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 | Ideas considered CSV | [docs/ideas-considered-table.csv](docs/ideas-considered-table.csv) |
 | Mentor feedback CSV | [docs/mentor-feedback-table.csv](docs/mentor-feedback-table.csv) |
@@ -275,11 +276,12 @@ Editable mindmap source:
 
 - [Team ideation mindmap - editable draw.io file](docs/loadlight-team-ideation-mindmap.drawio)
 - [Team ideation mindmap - HTML preview](docs/loadlight-ideas-mindmap.html)
+- [Original idea discussion PDF](docs/idea-discussion.pdf)
 - [Detailed ideation notes and tables](docs/ideation-mindmap-and-tables.md)
 
 ![LoadLight ideation mindmap](docs/loadlight-ideation-mindmap.png)
 
-This mindmap shows how our team started from different directions: stress support, planning, decision support, and reflection. We then compared which ideas were kept, merged, reduced, or dropped before combining the strongest parts into LoadLight.
+This mindmap shows how our team started from different directions: stress support, planning, decision support, and reflection. The original idea discussion PDF is included as raw ideation evidence, showing the team's early thinking before the final concept was narrowed. We then compared which ideas were kept, merged, reduced, or dropped before combining the strongest parts into LoadLight.
 
 ### 2.3 Mentor Consultation
 
@@ -831,7 +833,7 @@ Everything important should live in this README or in the video. The final submi
 
 Before final submission:
 
-- Replace the YouTube `TBD` with the final unlisted video link.
+- Confirm the YouTube video link opens correctly.
 - Confirm the Presentation Slides link opens correctly.
 - Confirm the Live Demo link opens correctly.
 - Confirm the exported mindmap image displays in section 2.2.
