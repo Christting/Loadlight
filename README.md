@@ -28,6 +28,8 @@ Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 &nbsp;·&nbsp;
 <a href="#reviewer-fast-path"><strong>Reviewer Fast Path</strong></a>
 &nbsp;·&nbsp;
+<a href="#core-features"><strong>Core Features</strong></a>
+&nbsp;·&nbsp;
 <a href="#2-ideation--process"><strong>Ideation</strong></a>
 &nbsp;·&nbsp;
 <a href="#4-what-makes-it-different"><strong>Novelty</strong></a>
@@ -50,6 +52,29 @@ Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 | Why is it novel? | It combines productivity planning, predictive What-if simulation, overload repair, and emotional support in one flow. |
 | Why can it be built? | The prototype already uses a realistic Next.js frontend, localStorage state, shared workload logic, editable task planning, and AI support routes. |
 | Why does it matter? | It helps students act before overload becomes burnout, missed deadlines, or crisis-level stress. |
+
+## Table of Contents
+
+| Section | What it covers |
+|---|---|
+| [Submission Links](#submission-links) | Live demo, GitHub-ready evidence, video and presentation links. |
+| [Reviewer Fast Path](#reviewer-fast-path) | Short reading path for judges with limited time. |
+| [1. Project Overview](#1-project-overview) | Problem, users, solution, core features, and design principles. |
+| [Core Features](#core-features) | Main product features and why each one is kept. |
+| [2. Ideation & Process](#2-ideation--process) | Ideas considered, mindmap, mentor consultation, and iteration evidence. |
+| [3. Design & Prototype](#3-design--prototype) | Prototype screens, UX flow, and interaction details. |
+| [4. What Makes It Different](#4-what-makes-it-different) | Comparison against existing tools and novelty explanation. |
+| [5. Technical Architecture & Feasibility](#5-technical-architecture--feasibility) | Stack, data model, workload engine, trade-offs, and risks. |
+| [6. Impact](#6-impact) | Target users, before/after value, and scalability. |
+| [7. Demo Guide](#7-demo-guide) | Step-by-step judge demo flow. |
+| [8. Video Outline](#8-video-outline) | Presentation structure and script. |
+| [9. Full Ideation Evidence](#9-full-ideation-evidence) | Mermaid mindmap, problem tree, user flow, iterations, and breadth of exploration. |
+| [10. Workload Logic Details](#10-workload-logic-details) | How task points, day load, week load, and priority are calculated. |
+| [11. Demo Mode Notes](#11-demo-mode-notes) | What the demo is designed to show. |
+| [12. Future Plan and Business Plan](#12-future-plan-and-business-plan) | Supabase future database path, integrations, monetization, and university partnerships. |
+| [13. Submission Checklist](#13-submission-checklist) | Final checks before submission. |
+| [14. Rubric Coverage Map](#14-rubric-coverage-map) | Direct mapping to judging criteria. |
+| [15. Setup](#15-setup) | Local development commands. |
 
 ## Rubric Jump Buttons
 
@@ -138,7 +163,9 @@ LoadLight is a student workload and stress management prototype that helps stude
 
 The app combines task planning with emotional support. Students add their tasks, LoadLight calculates workload from those tasks, and Lumi helps guide the user through planning, reflection, recovery, and boundary-setting.
 
-### Feature set
+<a id="core-features"></a>
+
+### Core Features
 
 | Feature | What it does | Why it matters |
 |---|---|---|
