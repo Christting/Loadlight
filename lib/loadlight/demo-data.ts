@@ -96,6 +96,30 @@ export const thursdayTasks: Task[] = [
 
 export const demoWeekTasks: Task[] = [
   {
+    id: 'lab-report-current-week',
+    title: 'Finish lab report',
+    date: '2026-09-12',
+    scheduledDate: '2026-09-12',
+    timeLabel: '2:00 PM',
+    durationHours: 5,
+    demand: 'high',
+    category: 'academic',
+    flexibility: 'flexible',
+    loadMix: { mental: 0.55, time: 0.3, physical: 0.15 },
+  },
+  {
+    id: 'prototype-demo-practice',
+    title: 'Prototype demo practice',
+    date: '2026-09-13',
+    scheduledDate: '2026-09-13',
+    timeLabel: '4:00 PM',
+    durationHours: 5,
+    demand: 'high',
+    category: 'academic',
+    flexibility: 'fixed',
+    loadMix: { mental: 0.5, social: 0.3, time: 0.2 },
+  },
+  {
     id: 'ai-ethics-reading',
     title: 'Read AI ethics article',
     date: DEMO_DATES.today,

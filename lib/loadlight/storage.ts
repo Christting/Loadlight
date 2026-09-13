@@ -2,8 +2,8 @@ import { demoWeekTasks } from './demo-data';
 import { DEFAULT_WORKLOAD_WEEK_ANCHOR, workloadWeekRange } from './load-logic';
 import type { StoredLoadLightState } from './types';
 
-export const STORAGE_KEY = 'loadlight.prototype.v8';
-const LEGACY_STORAGE_KEYS = ['loadlight.prototype.v1', 'loadlight.prototype.v2', 'loadlight.prototype.v3', 'loadlight.prototype.v4', 'loadlight.prototype.v5', 'loadlight.prototype.v6', 'loadlight.prototype.v7'];
+export const STORAGE_KEY = 'loadlight.prototype.v9';
+const LEGACY_STORAGE_KEYS = ['loadlight.prototype.v1', 'loadlight.prototype.v2', 'loadlight.prototype.v3', 'loadlight.prototype.v4', 'loadlight.prototype.v5', 'loadlight.prototype.v6', 'loadlight.prototype.v7', 'loadlight.prototype.v8'];
 
 const defaultWeek = workloadWeekRange(DEFAULT_WORKLOAD_WEEK_ANCHOR);
 
