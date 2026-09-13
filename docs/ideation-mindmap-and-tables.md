@@ -290,13 +290,3 @@ flowchart LR
 | Game-like relief | Wooden fish, bubble popping, breathing | Kept as small reset tools only. |
 | AI planning | Auto plan, suggested moves, generated replies | Kept with confirmation and user control. |
 | Calendar planner | Scheduling and rescheduling tasks | Partially kept through start date, due date, day plan, weekly plan, and reminders. |
-
-## 8. Short README Caption
-
-Use this under the mindmap image if you export it:
-
-> This mindmap shows how LoadLight evolved from a broad student stress idea into a workload-aware planning tool. We explored to-do lists, wellness chat, community support, mini-games, calendar planning, and AI scheduling, then narrowed the final concept to a connected flow: add tasks, calculate load, test commitments with What-if, rebalance overloaded weeks, and support emotional pressure through Lumi Care.
-
-Use this under the mentor table:
-
-> Mentor feedback pushed us to make the prototype more explainable and less crowded. The biggest changes were connecting workload to task data, making Balance week-based, separating Care from task balancing, and giving users control through Edit, reschedule, reminders, and confirm-before-apply AI plans.
