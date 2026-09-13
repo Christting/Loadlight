@@ -517,6 +517,8 @@ flowchart LR
 
 UI Prototype: [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/)
 
+User Guide PDF: [docs/loadlight-user-guide.pdf](docs/loadlight-user-guide.pdf)
+
 The prototype focuses on an end-to-end student workflow:
 
 1. Add real commitments in Tasks.
