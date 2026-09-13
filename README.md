@@ -73,7 +73,7 @@ Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 | Problem statement | Stress & Workload Manager |
 | Live demo | [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/) |
 | Video presentation | TBD - unlisted YouTube link |
-| Presentation slides | TBD - public Canva link |
+| Presentation slides | [https://canva.link/u23gu1mgbt5qp75](https://canva.link/u23gu1mgbt5qp75) |
 
 <a id="reviewer-fast-path"></a>
 
@@ -262,13 +262,13 @@ This mindmap shows how our team started from different directions: stress suppor
 
 | Date | Mentor / source | Feedback received | What was changed |
 |---|---|---|---|
-| 2026-09-12 | Mentor consultation / handwritten feedback | The dashboard should clearly explain how workload is calculated. | We connected Dashboard, Tasks, What-if, and Balance to shared workload logic so the numbers stay consistent. |
-| 2026-09-12 | Mentor consultation / handwritten feedback | Dashboard should be one of the remaining core features. | We kept Dashboard as the first warning screen for current week load. |
-| 2026-09-12 | Mentor consultation / handwritten feedback | Balance should be used when the user is really overloaded. | We made Balance week-based and focused it on move, keep, or drop decisions. |
-| 2026-09-12 | Mentor consultation / handwritten feedback | Care should be for users who feel really stressed and need help managing it. | We grouped Recovery, Reflect, and Boundary under Care so emotional support is separate from task balancing. |
-| 2026-09-12 | Mentor consultation / handwritten feedback | Recovery should let users pick one small reset. | We kept quick reset actions such as breathing and mini-game style relief. |
-| 2026-09-12 | Mentor consultation / handwritten feedback | Boundary should help students who do not know how to reject someone. | We added a Boundary flow where Lumi helps generate calmer replies. |
-| 2026-09-12 | Mentor consultation / handwritten feedback | There were too many pages and priorities. | We simplified the main demo flow to Tasks -> Dashboard -> What-if -> Balance -> Care. |
+| 2026-09-11 | Yeong Chiau Wen | The dashboard should clearly explain how workload is calculated. | We connected Dashboard, Tasks, What-if, and Balance to shared workload logic so the numbers stay consistent. |
+| 2026-09-11 | Yeong Chiau Wen | Dashboard should be one of the remaining core features. | We kept Dashboard as the first warning screen for current week load. |
+| 2026-09-11 | Yeong Chiau Wen | Balance should be used when the user is really overloaded. | We made Balance week-based and focused it on move, keep, or drop decisions. |
+| 2026-09-11 | Yeong Chiau Wen | Care should be for users who feel really stressed and need help managing it. | We grouped Recovery, Reflect, and Boundary under Care so emotional support is separate from task balancing. |
+| 2026-09-11 | Yeong Chiau Wen | Recovery should let users pick one small reset. | We kept quick reset actions such as breathing and mini-game style relief. |
+| 2026-09-11 | Yeong Chiau Wen | Boundary should help students who do not know how to reject someone. | We added a Boundary flow where Lumi helps generate calmer replies. |
+| 2026-09-11 | Yeong Chiau Wen | There were too many pages and priorities. | We simplified the main demo flow to Tasks -> Dashboard -> What-if -> Balance -> Care. |
 | 2026-09-12 | Team feedback | Users should be able to reschedule if they dislike the app's suggested plan. | We added Edit controls in the task list, day plan, and weekly plan. |
 | 2026-09-12 | Team feedback | Users should be able to set reminders before tasks. | We added reminder options during task creation and editing. |
 | 2026-09-12 | Team feedback | Workload data should not be hardcoded separately on each page. | We aligned the app around one shared workload calculation. |
@@ -331,17 +331,17 @@ Important UX choices:
 
 | Existing approach | Limitation | LoadLight's difference |
 |---|---|---|
-| Normal to-do list | Shows tasks but not capacity. | Converts tasks into workload and shows whether the week can carry more. |
-| Calendar planner | Shows time but not emotional or effort load. | Includes mental, time, physical, social, and errand pressure. |
-| Wellness chatbot | Gives advice but may not change the overloaded plan. | Connects support to task actions such as moving, keeping, dropping, and setting boundaries. |
-| Focus timer / Pomodoro | Helps work sessions but does not prevent overcommitment. | Helps students check capacity before accepting more work. |
+| Normal to-do list | Tracks what students have to do, but not what those commitments cost. | Turns tasks into capacity signals, so students can see how much they are actually carrying. |
+| Calendar planner | Shows time blocks, but not mental load, social pressure, physical effort, or emotional cost. | Combines dates with workload calculation, day plan, weekly plan, and pressure categories. |
+| Wellness chatbot | Reacts after stress appears, but may not change the overloaded plan. | Connects emotional support to real actions: test a commitment, move work, keep priority tasks, drop unnecessary tasks, or set a boundary. |
+| Focus timer / Pomodoro | Helps students finish a work session, but does not prevent overcommitment. | Helps students check capacity before accepting more work. |
 
 Novel features:
 
-- Capacity-first planning: LoadLight asks whether the week can carry more before asking students to do more.
-- What-if sandbox: Students can test a new task before accepting it.
-- Shared workload logic: Dashboard, Tasks, What-if, and Balance read from the same calculation.
-- Week-based Balance: Users reduce overload by moving flexible tasks to another week, keeping important work, or dropping what is unnecessary.
+- Tasks -> Capacity: LoadLight does not stop at listing tasks. It turns commitments into visible workload, so students can understand how heavy the week is.
+- React -> Anticipate: Instead of only helping after stress happens, What-if lets students test a possible commitment before they say yes.
+- Do more -> Know when enough is enough: Most productivity tools ask how to fit more into the day. LoadLight asks whether the day or week should carry it at all.
+- Balance with control: When overload happens, users can move, keep, or drop tasks, while AI suggestions require confirmation before anything changes.
 - Lumi Care: Emotional support is connected to real workload moments through Journal, Reflect, Recovery, and Boundary.
 
 <p align="right"><a href="#top">Back to top</a></p>
@@ -358,7 +358,7 @@ Novel features:
 | Prototype storage | localStorage | Fast and free for a working live demo without a backend. | Data stays on one browser and does not sync across devices. |
 | AI service | Gemini API route for Lumi support | Allows Lumi to generate chat support, boundary replies, and guided reflection. | Needs an API key and safety guardrails. |
 | Hosting plan | Vercel or similar app hosting | Fast deployment from GitHub and easy for judges to try. | Serverless API setup must protect keys. |
-| Future database | Firebase or Supabase | Suitable for authentication, synced tasks, journal history, and user data. | Requires privacy, auth, and data protection work. |
+| Future database | Supabase | Suitable for authentication, PostgreSQL storage, synced tasks, journal history, and user data. | Requires privacy, auth, and data protection work. |
 
 ### Architecture overview
 
@@ -403,7 +403,7 @@ Lumi support
 |---|---|---|
 | Workload score may feel subjective. | Stress differs by student. | Let users set load preferences and override priority. |
 | AI suggestions may be wrong. | Bad advice can reduce trust. | AI suggestions require confirmation and should be framed as support, not orders. |
-| No backend in prototype. | Judges may wonder whether it can scale. | README explains localStorage as prototype storage and Firebase/Supabase as future database path. |
+| No backend in prototype. | Judges may wonder whether it can scale. | README explains localStorage as prototype storage and Supabase as the future database path. |
 | Too many features may confuse the demo. | Reviewers have limited time. | Demo flow focuses on Tasks -> Dashboard -> What-if -> Balance -> Care. |
 | Emotional support could sound like therapy. | The app should not claim to replace professional help. | Position Lumi as stress support and planning companion, not a therapist. |
 | Calendar integration may be complex. | Future feature needs permissions and sync logic. | Keep it as future plan after core workflow is validated. |
@@ -426,7 +426,7 @@ For the prototype phase, our scope is:
 Future build scope:
 
 - Add authentication and cloud sync.
-- Store tasks and journal history in Firebase or Supabase.
+- Store tasks and journal history in Supabase.
 - Integrate calendar apps, school deadlines, and task platforms.
 - Improve personalization so LoadLight learns which types of load affect each student most.
 - Explore university partnerships as part of student wellbeing support.
@@ -482,7 +482,7 @@ Target duration: 3 to 5 minutes.
 | Product overview | Person 1 | LoadLight connects tasks, workload, What-if, Balance, and Lumi Care. |
 | Feature demo 1 | Person 2 | Show Tasks, Add task, Dashboard, Day plan, Weekly plan, reminders, and edit/reschedule controls. |
 | Feature demo 2 | Person 3 | Show What-if and Balance. Explain how users test a possible new commitment, then move, keep, or drop tasks if the week is too heavy. |
-| Tech and feasibility | Person 4 | Explain Next.js, TypeScript, localStorage prototype, shared workload logic, and Gemini-powered Lumi support. |
+| Tech and feasibility | Person 4 | Explain Next.js, TypeScript, localStorage prototype, shared workload logic, Gemini-powered Lumi support, and Supabase as the future auth/PostgreSQL database path. |
 | Future and business plan | Person 4 | Explain calendar/task platform integration, personalization, freemium model, premium AI planning, and university wellbeing partnerships. |
 | Closing | Person 4 | End with the core message: LoadLight helps students carry less before things become too heavy. |
 
@@ -510,7 +510,7 @@ If the week becomes too full, Balance helps the student repair it. They can move
 
 For emotional pressure, Lumi Care supports the student through Recover, Reflect, Boundary, and Journal. Journal lets users write about stress and mood, then Lumi can help analyze the pressure source and suggest a comforting next step. Boundary helps students write calmer replies when they need to say no or ask to move something.
 
-Technically, LoadLight is built with Next.js, React, TypeScript, and localStorage for the prototype. The key engineering decision is shared workload logic: Dashboard, Tasks, What-if, and Balance use the same calculation, so the numbers stay consistent when a task changes. Lumi support is connected through an API route for AI-generated chat, reflection, and boundary replies.
+Technically, LoadLight is built with Next.js, React, TypeScript, and localStorage for the prototype. The key engineering decision is shared workload logic: Dashboard, Tasks, What-if, and Balance use the same calculation, so the numbers stay consistent when a task changes. Lumi support is connected through an API route for AI-generated chat, reflection, and boundary replies. For a production version, Supabase would handle authentication and PostgreSQL storage for synced tasks, journal history, and user data.
 
 For the future, LoadLight can connect with calendars, school deadlines, and task platforms so students do not need to manually enter everything forever. It can also become more personal by learning which type of load affects each student most. For growth, LoadLight can start as a freemium student app, with premium AI planning, calendar sync, deeper insights, and personalized recovery. The larger business opportunity is university partnerships, where schools can use LoadLight as early wellbeing support before overload becomes burnout.
 
@@ -839,7 +839,7 @@ Everything important should live in this README or in the video. The final submi
 Before final submission:
 
 - Replace the YouTube `TBD` with the final unlisted video link.
-- Replace the Presentation Slides `TBD` with the public Canva link.
+- Confirm the Presentation Slides link opens correctly.
 - Confirm the Live Demo link opens correctly.
 - Export the editable diagrams.net mindmap as `docs/loadlight-ideation-mindmap.png`.
 - Embed the exported mindmap image in section 2.2.
