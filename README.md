@@ -509,36 +509,6 @@ Target duration: 3 to 5 minutes.
 | Future and business plan | Person 4 | Explain calendar/task platform integration, personalization, freemium model, premium AI planning, and university wellbeing partnerships. |
 | Closing | Person 4 | End with the core message: LoadLight helps students carry less before things become too heavy. |
 
-### Short presentation script
-
-Good morning judges, we are Team roti canAI, and this is LoadLight.
-
-Imagine it is Thursday night. You still have an assignment, a group meeting, a shift, and someone asks, "Can you help with one more thing?" Most students do not say yes because they have time. They say yes because they cannot see the cost yet.
-
-That is why we built LoadLight.
-
-LoadLight helps students see their real workload, test new commitments before accepting them, and lighten the week before burnout starts.
-
-The problem is not that students do not have to-do lists. We have too many disconnected places: deadlines, group chats, shifts, club activities, errands, and social pressure. A normal task app tells students what to do, but it does not answer the question students actually need: can I still carry this?
-
-LoadLight is built around that question. When users add tasks, the app calculates workload. When they want to accept something new, What-if shows the impact first. When the load becomes too heavy, Balance helps them decide what to move, keep, or drop. Lumi makes the experience feel less cold because overload is not only a scheduling problem. It is emotional too.
-
-In Tasks, users add a task by entering the title, area, start date, due date, estimated time, flexibility, priority, and reminder. This is important because the task is not just saved into a list. It becomes part of the workload calculation. Users can also view a day plan, a weekly plan, edit details, reschedule work, and set reminders before the task starts.
-
-The Dashboard gives one fast answer: how heavy is this week? Instead of showing a long list first, it shows the current workload and which type of pressure is taking the most space.
-
-What-if is where LoadLight becomes different from a normal planner. Before accepting a new commitment, the student can test it. For example, if they add an extra shift or meeting, LoadLight previews how the workload changes before they say yes.
-
-If the week becomes too full, Balance helps the student repair it. They can move flexible tasks to another week, keep important tasks, or drop unnecessary ones. AI auto plan can suggest a lighter plan, but nothing changes until the user confirms.
-
-For emotional pressure, Lumi Care supports the student through Recover, Reflect, Boundary, and Journal. Journal lets users write about stress and mood, then Lumi can help analyze the pressure source and suggest a comforting next step. Boundary helps students write calmer replies when they need to say no or ask to move something.
-
-Technically, LoadLight is built with Next.js, React, TypeScript, and localStorage for the prototype. The key engineering decision is shared workload logic: Dashboard, Tasks, What-if, and Balance use the same calculation, so the numbers stay consistent when a task changes. Lumi support is connected through an API route for AI-generated chat, reflection, and boundary replies. For a production version, Supabase would handle authentication and PostgreSQL storage for synced tasks, journal history, and user data.
-
-For the future, LoadLight can connect with calendars, school deadlines, and task platforms so students do not need to manually enter everything forever. It can also become more personal by learning which type of load affects each student most. For growth, LoadLight can start as a freemium student app, with premium AI planning, calendar sync, deeper insights, and personalized recovery. The larger business opportunity is university partnerships, where schools can use LoadLight as early wellbeing support before overload becomes burnout.
-
-Most productivity tools ask students to do more. LoadLight asks a healthier question: can this week actually hold this? That is why we believe LoadLight deserves to be built.
-
 <p align="right"><a href="#top">Back to top</a></p>
 
 ## 9. Full Ideation Evidence
