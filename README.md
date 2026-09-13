@@ -117,7 +117,7 @@ If you only have a few minutes, read these sections in this order:
 
 | Evidence | File / section |
 |---|---|
-| Ideation session | [mindmap image](docs/loadlight-ideation-mindmap.png), [HTML preview](docs/loadlight-ideas-mindmap.html), [original discussion PDF](docs/idea-discussion.pdf) |
+| Ideation session | [mindmap image](docs/loadlight-ideation-mindmap.png), [original discussion PDF](docs/idea-discussion.pdf) |
 | User guide PDF | [docs/loadlight-user-guide.pdf](docs/loadlight-user-guide.pdf) |
 | Detailed ideation notes | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 | Ideas considered CSV | [docs/ideas-considered-table.csv](docs/ideas-considered-table.csv) |
@@ -274,7 +274,6 @@ All ideation evidence is grouped here as one session, from raw discussion to fin
 |---|---|
 | Original idea discussion PDF | [docs/idea-discussion.pdf](docs/idea-discussion.pdf) |
 | Final exported mindmap image | [docs/loadlight-ideation-mindmap.png](docs/loadlight-ideation-mindmap.png) |
-| HTML mindmap preview | [docs/loadlight-ideas-mindmap.html](docs/loadlight-ideas-mindmap.html) |
 | Detailed ideation notes and tables | [docs/ideation-mindmap-and-tables.md](docs/ideation-mindmap-and-tables.md) |
 
 ![LoadLight ideation mindmap](docs/loadlight-ideation-mindmap.png)
