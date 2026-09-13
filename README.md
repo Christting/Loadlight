@@ -75,7 +75,7 @@ Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 
 | Scoring area | Quick jump |
 |---|---|
-| Ideation 25% | [Ideas considered](#21-ideas-we-considered), [Ideation session](#22-ideation-session), [Full ideation evidence](#24-full-ideation-evidence) |
+| Ideation 25% | [Ideas considered](#21-ideas-we-considered), [Ideation session](#22-ideation-session), [Full ideation evidence](#full-ideation-evidence) |
 | Creativity and Novelty 15% | [What makes it different](#4-what-makes-it-different), [Why this direction won](#212-why-this-direction-won) |
 | Feasibility 15% | [Technical architecture](#5-technical-architecture--feasibility), [Risks and mitigation](#feasibility-risk-and-mitigation) |
 | Design 10% | [Design and prototype](#3-design--prototype), [Prototype interaction details](#prototype-interaction-details) |
@@ -293,7 +293,7 @@ This mindmap shows how our team started from different directions: stress suppor
 | 2026-09-12 | Team feedback | Users should be able to set reminders before tasks. | We added reminder options during task creation and editing. |
 | 2026-09-12 | Team feedback | Workload data should not be hardcoded separately on each page. | We aligned the app around one shared workload calculation. |
 
-### 2.4 Full Ideation Evidence
+### Full Ideation Evidence
 
 ### Detailed mindmap source
 
