@@ -130,6 +130,14 @@ function todayDisplayLabel(): string {
   return new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
 }
 
+function todayCardDateParts() {
+  const parts = new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'long' }).formatToParts(new Date());
+  return {
+    day: parts.find((part) => part.type === 'day')?.value ?? '01',
+    month: parts.find((part) => part.type === 'month')?.value ?? 'September',
+  };
+}
+
 function calculateLoadBreakdown(tasks: Task[]): Record<LoadDimension, number> {
   const totals: Record<LoadDimension, number> = { mental: 0, time: 0, physical: 0, social: 0, errands: 0 };
   tasks.forEach((task) => {
@@ -249,6 +257,7 @@ function HomeView({ currentLoad, currentWeekAnchor, stored, onSave, onNavigate, 
     return { day: dayPart.slice(0, 3), date: rest.replace('September', 'Sep') || dayPart };
   }
   const historyDates = Array.from(new Set(journalHistory.map((entry) => entry.date)));
+  const journalCardDate = todayCardDateParts();
   const filteredJournalHistory = journalHistory.filter((entry) => {
     const search = historySearch.trim().toLowerCase();
     const text = [entry.title, entry.date, entry.moodLabel, entry.mood, entry.note, entry.speechTranscript, ...(entry.tags ?? [])].filter(Boolean).join(' ').toLowerCase();
@@ -278,7 +287,7 @@ function HomeView({ currentLoad, currentWeekAnchor, stored, onSave, onNavigate, 
         </article>
         <article className="home-swipe-card diary-card" aria-label="Write today journal">
           <div className="card-lumi-panel"><Lumi state="sleepy" size="large" /><span>Journal</span></div>
-          <div className="diary-card-copy"><div className="diary-card-date"><strong>09</strong><span>September</span></div><span>Tonight, leave it here.</span><p>Mood first, then one note with Lumi.</p><Button className="primary-action diary-card-action" type="button" onClick={openJournalPage}>Record today <ArrowRight /></Button></div>
+          <div className="diary-card-copy"><div className="diary-card-date"><strong>{journalCardDate.day}</strong><span>{journalCardDate.month}</span></div><span>Tonight, leave it here.</span><p>Mood first, then one note with Lumi.</p><Button className="primary-action diary-card-action" type="button" onClick={openJournalPage}>Record today <ArrowRight /></Button></div>
         </article>
         <article className="home-swipe-card tasks-card" aria-label="This week task list">
           <div className="tasks-card-title"><span><ListChecks /></span><div><strong>This week</strong><small>Point form focus</small></div></div>
