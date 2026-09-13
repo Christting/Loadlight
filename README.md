@@ -12,7 +12,7 @@
 
 **A stress and workload manager for students who need to see capacity before saying yes.**
 
-Team roti canAI · CodeNection 2026 · Stress & Workload Manager
+Team roti canAI · CodeNection 2026 · Lifestyle Track: Beating the Burnout
 
 <br />
 
@@ -95,7 +95,7 @@ Team roti canAI · CodeNection 2026 · Stress & Workload Manager
 |---|---|
 | Team | Team roti canAI |
 | Members | Mia, [Member 2], [Member 3], [Member 4] |
-| Problem statement | Stress & Workload Manager |
+| Track | Lifestyle Track: Beating the Burnout |
 | Live demo | [https://loadlight-sable.vercel.app/](https://loadlight-sable.vercel.app/) |
 | Video presentation | TBD - unlisted YouTube link |
 | Presentation slides | [https://canva.link/u23gu1mgbt5qp75](https://canva.link/u23gu1mgbt5qp75) |
